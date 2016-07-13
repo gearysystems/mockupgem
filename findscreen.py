@@ -2,61 +2,74 @@ import cv2
 from PIL import Image
 import numpy
 
-image = cv2.imread('mockup.png')
-background_height, background_width = image.shape[:2]
-edged_image = cv2.Canny(image, 30, 200)
+def main():
+    background_image = cv2.imread('side.jpg')
+    prepped_background_image = get_prepped_background_image(background_image)
+    overlay_image = cv2.imread('screenshot.png')
+    screen_contour = get_screen_contour(prepped_background_image)
 
-(contours, _) = cv2.findContours(edged_image.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-contours = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
-screenCnt = None
+    warped_overlay_image = overlay_image.copy()
+    warp_overlay_image(
+        prepped_background_image,
+        warped_overlay_image,
+        screen_contour,
+    )
 
-for contour in contours:
-    peri = cv2.arcLength(contour, True)
-    approx = cv2.approxPolyDP(contour, 0.02 * peri, True)
+    # final = cv2.addWeighted(background_image, 0.5, warped_overlay_image, 0.5, 1)
+    cv2.imshow("final", warped_overlay_image)
+    cv2.waitKey(0)
 
-    # if our approximated contour has four points, then
-    # we can assume that we have found our screen
-    if len(approx) == 4:
-    	screenCnt = approx
-    	break
+def get_prepped_background_image(image, convertToGrayscale=False):
+    if convertToGrayscale:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Removes noise while preserving edges
+    filtered_image = cv2.bilateralFilter(image, 30, 30, 30)
+    # Find edges in image
+    return cv2.Canny(filtered_image, 30, 200)
 
-cv2.drawContours(image, [screenCnt], -1, (0, 255, 0), 3)
-# cv2.imshow("Screen Location", image)
-# cv2.waitKey(0)
+def get_screen_contour(image):
+    contours, _ = cv2.findContours(
+        image.copy(),
+        cv2.RETR_TREE,
+        cv2.CHAIN_APPROX_SIMPLE
+    )
+    largest_contours = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
 
-screenCoords = numpy.asarray(
-    [numpy.asarray(x[0], dtype=numpy.float32) for x in screenCnt],
-    dtype=numpy.float32
-)
+    for contour in contours:
+        contour_perimiter = cv2.arcLength(contour, True)
+        approximate_contour = cv2.approxPolyDP(contour, 0.02 * contour_perimiter, True)
 
-overlay_image = cv2.imread('screenshot.png')
-# cv2.imshow("Overlay image", overlay_image)
-overlay_height, overlay_width = image.shape[:2]
-# cv2.waitKey(0)
-input_coordinates = numpy.float32([[0, 0], [overlay_width, 0], [0, overlay_height]])
-    # numpy.asarray([0, overlay_height], dtype=numpy.float32)
-# ])
+        # if our approximated contour has four points, then
+        # we can assume that we have found our screen
+        if len(approximate_contour) == 4:
+        	return approximate_contour
 
-print(screenCoords)
-screenCoords = numpy.float32([
-    screenCoords[1],
-    screenCoords[0],
-    screenCoords[3],
-])
+    raise Exception("Could not detect screen!")
 
-transformation_matrix = cv2.getAffineTransform(
-    input_coordinates,
-    screenCoords,
-)
-# print(transformMatrix)
-print(screenCoords)
+def warp_overlay_image(background_image, overlay_image, screen_contour):
+    background_height, background_width = background_image.shape[:2]
+    overlay_height, overlay_width = overlay_image.shape[:2]
 
-# warped_image = numpy.zeros((background_height, background_width,3), numpy.uint8)
-warped_image = cv2.warpAffine(
-    overlay_image,
-    transformation_matrix,
-    (background_width, background_height),
-)
-final = cv2.addWeighted(warped_image, 0.5, image, 0.5, 1)
-cv2.imshow("Overlay image", final)
-cv2.waitKey(0)
+    screen_coordinates = numpy.float32(
+        [numpy.float32(x[0]) for x in screen_contour]
+    )
+
+    overlay_coordinates = numpy.float32([
+        [0, 0],
+        [overlay_width, 0],
+        [overlay_width, overlay_height],
+        [0, overlay_height],
+    ])
+
+    transformation_matrix = cv2.getPerspectiveTransform(
+        overlay_coordinates,
+        screen_coordinates,
+    )
+
+    cv2.warpPerspective(
+        overlay_image,
+        transformation_matrix,
+        (background_width, background_height),
+    )
+
+main()
