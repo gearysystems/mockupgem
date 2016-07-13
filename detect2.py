@@ -28,7 +28,10 @@ background_height, background_width = image.shape[:2]
 # image = cv2.resize(image, (400, 400))
 background_image = Image.open('mockup3.png')
 
-overlay_image = Image.open('foreground.png')
+overlay_image = Image.open('123.png')
+overlay_image.convert('RGBA')
+# overlay_image = overlay_image.resize((background_width, background_height))
+
 overlay_width, overlay_height = overlay_image.size
 # overlay_image.thumbnail((180, 200))
 
@@ -50,31 +53,53 @@ for cnt in cnts:
     	screenCnt = approx
     	break
 
-rect = cv2.minAreaRect(cnt)
-centerCoords, dimensionCoords, rotation = rect
-rect_width, rect_height = dimensionCoords
-boxCoords = cv2.cv.BoxPoints(rect)
+rectCoords = [x[0].tolist() for x in screenCnt]
+print(rectCoords)
+# for x in screenCnt:
+#     print(x[0])
+# rect = cv2.minAreaRect(cnt)
+# centerCoords, dimensionCoords, rotation = rect
+# rect_width, rect_height = dimensionCoords
+# rect_center_x, rect_center_y = centerCoords[0], centerCoords[1]
+# boxCoords = cv2.cv.BoxPoints(rect)
 # print(width, height, rotation)
 
-print(boxCoords)
+# boxCoords = list(boxCoords)
+# boxCoords[1], boxCoords[2] = boxCoords[2], boxCoords[1]
+# boxCoords = tuple(boxCoords)
 new_coefficients = find_transform_coefficients(
     [(0,0),(overlay_width,0),(overlay_width, overlay_height),(0, overlay_height)],
     # TODO: omg fix this
-    boxCoords,
+    rectCoords,
 )
-overlay_image.thumbnail((rect_width, rect_height))
+# print(rect_width)
+# print(rect_height)
+# overlay_image.resize((rect_width, rect_height))
+overlay_image.show()
 overlay_image = overlay_image.transform(
-    (2000, 2000),
+    (overlay_width, overlay_height),
     Image.AFFINE,
     data=new_coefficients
 )
+# overlay_image = overlay_image.rotate(rotation)
+# overlay_image = overlay_image.resize((2000, 2000))
 overlay_image.show()
 
-new_image = Image.new('RGB', (background_width, background_height))
-new_image.paste(background_image, (0, 0))
-# new_image.paste(overlay_image, (90,54))
+# new_overlay_image = Image.new('RGB', (background_width, background_height))
+# overlay_image.show()
+# new_overlay_image.paste(overlay_image, (0, 0))
+# new_overlay_image.show()
+# new_image = Image.new('RGBA', (background_width, background_height))
+# new_image.paste(background_image, (0, 0))
+# overlay_image.show()
+# new_image.paste(overlay_image, (0,0))
+# new_image.paste(new_overlay_image, (0,0))
+# Image.alpha_composite(new_image, new_overlay_image)
 # new_image.show()
+# new_overlay_image.show()
 
-cv2.drawContours(image, [screenCnt], -1, (0, 255, 0), 3)
+# print(screenCnt)
+# cv2.drawContours(image, [screenCnt], -1, (0, 255, 0), 3)
+# cv2.drawContours(image, [numpy.int0(boxCoords)], 0, (0, 255, 0), 2)
 # cv2.imshow("Game Boy Screen", image)
 # cv2.waitKey(0)
