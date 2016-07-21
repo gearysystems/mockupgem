@@ -1,8 +1,9 @@
-var busboy = require('connect-busboy');
-var AWS = require('aws-sdk')
-var uuid = require('node-uuid');
-var errors = require('./errors');
-var streamBuffers = require('stream-buffers');
+const busboy = require('connect-busboy');
+const AWS = require('aws-sdk')
+const uuid = require('node-uuid');
+const errors = require('./errors');
+const streamBuffers = require('stream-buffers');
+const mockupMetadata = require('./mockup_metadata.js');
 
 const uploadBucket = 'mockup-gem-uploaded-images'
 // 4 MB
@@ -25,6 +26,7 @@ const imageUploadMiddleware = busboy({
    surprisingly complex code.
 */
 function imageUploadHandler(req, res) {
+ // console.log(mockupMetadata);
  var overlay_image_found = false;
  var mockup_name_found = false;
 
@@ -49,9 +51,13 @@ function imageUploadHandler(req, res) {
   req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
    if (fieldname === 'mockup_name') {
     mockup_name_found = true;
+
+    if (mockupMetadata[val] === undefined) {
+     return reject('invalid_mockup_name')
+    }
     return resolve(val);
    } else {
-    return reject();
+    return reject('invalid_request');
    }
   });
  }
@@ -88,18 +94,22 @@ function imageUploadHandler(req, res) {
   */
   awaitMockupName
    .then(streamToS3)
-   .catch(function(e) {
-    console.log(e);
+   .catch(function(exception) {
+    console.log(exception);
+    if (exception === 'invalid_mockup_name') {
+     return res.send(errors.invalidMockupNameError());
+    }
     return res.send(errors.invalidUploadRequestError());
    });
 
   function streamToS3(mockup_name) {
    // Resume the buffer since we've validated all the fields and want the data
    imageUploadBuffer.resume();
+   s3ImageKey = getS3ImageKey(mockup_name, filename);
    var s3obj = new AWS.S3({
     params: {
      Bucket: uploadBucket,
-     Key: getS3ImageKey(mockup_name, filename),
+     Key: s3ImageKey,
     }
    });
 
@@ -115,12 +125,34 @@ function imageUploadHandler(req, res) {
  }
 }
 
-function getS3ImageKey(mockup_name, filename) {
+function getS3ImageKey(mockupName, filename) {
+ // If we reach this point, we've already determined we have the metadata
+ const specificMockupMetadata = mockupMetadata[mockupName];
+ const screenCoordinates = specificMockupMetadata['screenCoordinates']
  const splitFilename = filename.split('.');
  // Currently ignoring their original file extension but may be useful later.
  const originalFileExtension = splitFilename.length >= 2 ? splitFilename.pop() : 'unknown';
  const imageUuid = uuid.v4();
- return `${imageUuid}-${mockup_name}-${originalFileExtension}`;
+ const screenCoordinatesFilename = getScreenCoordinatesForFilename(screenCoordinates)
+ return `${imageUuid}-${mockupName}-${screenCoordinatesFilename}-${originalFileExtension}`;
+}
+
+/*
+ {
+  topLeft: [100, 200],
+  topRight: [200, 300],
+  bottomRight: [300, 400],
+  bottomLeft: [400, 500],
+ }
+ TO
+ 100_200-200_300-300_400-400_500
+*/
+function getScreenCoordinatesForFilename(screenCoordinates) {
+ topLeft = `${screenCoordinates['topLeft'][0]}_${screenCoordinates['topLeft'][1]}`
+ topRight = `${screenCoordinates['topRight'][0]}_${screenCoordinates['topRight'][1]}`
+ bottomRight = `${screenCoordinates['bottomRight'][0]}_${screenCoordinates['bottomRight'][1]}`
+ bottomLeft = `${screenCoordinates['bottomLeft'][0]}_${screenCoordinates['bottomLeft'][1]}`
+ return `${topLeft}-${topRight}-${bottomRight}-${bottomLeft}`
 }
 
 module.exports = {
