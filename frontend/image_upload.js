@@ -26,19 +26,31 @@ const imageUploadMiddleware = busboy({
    surprisingly complex code.
 */
 function imageUploadHandler(req, res) {
- // console.log(mockupMetadata);
- var overlay_image_found = false;
- var mockup_name_found = false;
+ var overlayImageFound = false;
+ var mockupNameFound = false;
+ var mockupNameIsValid = false;
+ var mockupName;
+
+ const imageUUID = uuid.v4();
+ var s3ImageKey;
 
  /* If we make it to the end of the stream and don't have all the required fields
     then we reject the request.
  */
  req.busboy.on('finish', handleEndOfRequest);
  function handleEndOfRequest() {
-  if (overlay_image_found === false || mockup_name_found === false) {
+  if (overlayImageFound === false || mockupNameFound === false) {
    return res.send(errors.invalidUploadRequestError());
   }
-  return res.send();
+
+  if (mockupNameIsValid === false) {
+   return res.send(errors.invalidMockupNameError());
+  }
+
+  mockupExtension = mockupMetadata[mockupName]['file_extension']
+  return res.send({
+   download_url: getDownloadImageURL(mockupName, imageUUID, mockupExtension),
+  });
  }
 
  /* This promise won't resolve until all required fields have been validated at
@@ -50,11 +62,16 @@ function imageUploadHandler(req, res) {
  function waitForMockupName(resolve, reject) {
   req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
    if (fieldname === 'mockup_name') {
-    mockup_name_found = true;
+    mockupNameFound = true;
 
     if (mockupMetadata[val] === undefined) {
      return reject('invalid_mockup_name')
     }
+
+    mockupNameIsValid = true
+    mockupName = val;
+    // Generate the name we will use for the image in S3
+    s3ImageKey = getS3ImageKey(mockupName, imageUUID);
     return resolve(val);
    } else {
     return reject('invalid_request');
@@ -73,7 +90,7 @@ function imageUploadHandler(req, res) {
    return res.send(errors.invalidUploadFieldError());
   }
 
-  overlay_image_found = true;
+  overlayImageFound = true;
 
   var imageUploadBuffer = new streamBuffers.ReadableStreamBuffer();
   imageUploadBuffer.pause();
@@ -96,19 +113,18 @@ function imageUploadHandler(req, res) {
    .then(streamToS3)
    .catch(function(exception) {
     console.log(exception);
-    if (exception === 'invalid_mockup_name') {
-     return res.send(errors.invalidMockupNameError());
-    }
-    return res.send(errors.invalidUploadRequestError());
+    return false;
    });
 
   function streamToS3(mockup_name) {
    // Resume the buffer since we've validated all the fields and want the data
    imageUploadBuffer.resume();
-   s3ImageKey = getS3ImageKey(mockup_name, filename);
    var s3obj = new AWS.S3({
     params: {
      Bucket: uploadBucket,
+     /* This will already be set because we waited for the awaitMockupName
+        promise to resolve.
+     */
      Key: s3ImageKey,
     }
    });
@@ -125,16 +141,12 @@ function imageUploadHandler(req, res) {
  }
 }
 
-function getS3ImageKey(mockupName, filename) {
+function getS3ImageKey(mockupName, imageUUID) {
  // If we reach this point, we've already determined we have the metadata
  const specificMockupMetadata = mockupMetadata[mockupName];
  const screenCoordinates = specificMockupMetadata['screenCoordinates']
- const splitFilename = filename.split('.');
- // Currently ignoring their original file extension but may be useful later.
- const originalFileExtension = splitFilename.length >= 2 ? splitFilename.pop() : 'unknown';
- const imageUuid = uuid.v4();
  const screenCoordinatesFilename = getScreenCoordinatesForFilename(screenCoordinates)
- return `${imageUuid}-${mockupName}-${screenCoordinatesFilename}-${originalFileExtension}`;
+ return `${imageUUID}*${mockupName}*${screenCoordinatesFilename}`;
 }
 
 /*
@@ -152,7 +164,18 @@ function getScreenCoordinatesForFilename(screenCoordinates) {
  topRight = `${screenCoordinates['topRight'][0]}_${screenCoordinates['topRight'][1]}`
  bottomRight = `${screenCoordinates['bottomRight'][0]}_${screenCoordinates['bottomRight'][1]}`
  bottomLeft = `${screenCoordinates['bottomLeft'][0]}_${screenCoordinates['bottomLeft'][1]}`
- return `${topLeft}-${topRight}-${bottomRight}-${bottomLeft}`
+ return `${topLeft}*${topRight}*${bottomRight}*${bottomLeft}`
+}
+
+// TODO: Actually prefix it with the bucket name
+/*
+ Returns a url in the same format that the lambda function will name the
+ overlayed image after processing it and storing it in S3. It also prefixes the
+ S3 bucket name so once the image is processed the URL will immediately start
+ working to download the image (or embed it in a script tag or whatever.)
+*/
+function getDownloadImageURL(mockupName, imageUUID, mockupExtension) {
+ return `${imageUUID}_${mockupName}.${mockupExtension}`
 }
 
 module.exports = {
