@@ -3,11 +3,13 @@ const AWS = require('aws-sdk')
 const uuid = require('node-uuid');
 const errors = require('./errors');
 const streamBuffers = require('stream-buffers');
-const mockupMetadata = require('./mockup_metadata.js');
+const mockupMetadata = require('./mockup_metadata').rawMockupMetadata;
+const logger = require('./logger');
 
 const uploadBucket = 'mockup-gem-uploaded-images'
 // 4 MB
 const maxFileSize = 4000000
+const imageDownloadURLPrefix = 'https://s3-us-west-2.amazonaws.com/mockup-gem-processed-images'
 
 const imageUploadMiddleware = busboy({
  immediate: true,
@@ -39,6 +41,7 @@ function imageUploadHandler(req, res) {
  */
  req.busboy.on('finish', handleEndOfRequest);
  function handleEndOfRequest() {
+  console.log('done');
   if (overlayImageFound === false || mockupNameFound === false) {
    return res.send(errors.invalidUploadRequestError());
   }
@@ -93,7 +96,6 @@ function imageUploadHandler(req, res) {
   overlayImageFound = true;
 
   var imageUploadBuffer = new streamBuffers.ReadableStreamBuffer();
-  imageUploadBuffer.pause();
   // Pipe the file upload stream into our buffer
   file.on('data', function(data) {
    imageUploadBuffer.put(data);
@@ -112,13 +114,13 @@ function imageUploadHandler(req, res) {
   awaitMockupName
    .then(streamToS3)
    .catch(function(exception) {
-    console.log(exception);
+    logger.log(exception);
     return false;
    });
 
   function streamToS3(mockup_name) {
    // Resume the buffer since we've validated all the fields and want the data
-   imageUploadBuffer.resume();
+   // imageUploadBuffer.resume();
    var s3obj = new AWS.S3({
     params: {
      Bucket: uploadBucket,
@@ -133,9 +135,10 @@ function imageUploadHandler(req, res) {
    // of being batched in memory.
    s3obj.upload({Body: imageUploadBuffer}, function(err, data) {
     if (err) {
+     logger.log(err);
      return res.send(errors.uploadFailedError());
     }
-    console.log(data);
+    logger.log(data);
    });
   }
  }
@@ -175,7 +178,7 @@ function getScreenCoordinatesForFilename(screenCoordinates) {
  working to download the image (or embed it in a script tag or whatever.)
 */
 function getDownloadImageURL(mockupName, imageUUID, mockupExtension) {
- return `${imageUUID}_${mockupName}.${mockupExtension}`
+ return `${imageDownloadURLPrefix}/${imageUUID}_${mockupName}.${mockupExtension}`
 }
 
 module.exports = {
