@@ -120,7 +120,7 @@ function getMockupMetadataByName(rawMockupMetadata) {
 */
 function getMockupMetadataByDevice(rawMockupMetadata) {
   var mockupMetadataByDevice = {};
-  for (const mockupName in rawMockupMetadata) {
+  for (var mockupName in rawMockupMetadata) {
     mockupMetadata = rawMockupMetadata[mockupName];
     mockupDevice = mockupMetadata['device'];
     if (mockupMetadataByDevice[mockupDevice] === undefined) {
