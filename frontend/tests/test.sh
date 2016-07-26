@@ -5,7 +5,7 @@
 URL=localhost:3000
 if [ "$PRODUCTION" == "true" ]
 then
- URL=mockupgemfrontend.zcqdhmpt6y.us-west-2.elasticbeanstalk.com
+ URL=http://mockupgem.gearysystems.com
 fi
 
 SAMPLE_IMAGE=$1
