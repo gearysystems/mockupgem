@@ -1,10 +1,16 @@
-function renderIndex(thumbnailURLs) {
-  var thumbnailList = renderThumbnailList(thumbnailURLs)
+function renderIndex(thumbnailURLs, devices) {
+  var thumbnailList = renderThumbnailList(thumbnailURLs);
+  var deviceTabs = renderTabs(devices);
+  var fileUploadScript = require('./fileUpload');
+  var filterImagesScript = require('./filterImages.js');
+  var styles = require('./styles.js');
   return `<html>
     <head>
       <link rel="stylesheet" href="https://npmcdn.com/flickity@2.0/dist/flickity.css" media="screen">
+      <style>${styles}</style>
     </head>
     <body>
+      ${deviceTabs}
       <img src="" id="overlayed_image" onerror="this.style.display='none'"/>
       <div class="carousel" data-flickity>
           ${thumbnailList}
@@ -17,7 +23,8 @@ function renderIndex(thumbnailURLs) {
       <br/>
       ${renderForm()}
       <script>
-        ${handleFileUpload()}
+        ${fileUploadScript}
+        ${filterImagesScript}
       </script>
       <script src="https://npmcdn.com/flickity@2.0/dist/flickity.pkgd.min.js"></script>
     </body>
@@ -25,9 +32,20 @@ function renderIndex(thumbnailURLs) {
   `
 }
 
+function renderTabs(devices) {
+  var tabs = [];
+  devices.forEach(function(device){
+    var li = `<li><a href="#" class="tablinks ${device}" onclick="showDevices(event, '${device}')">${device}</a></li>`;
+    tabs.push(li);
+  });
+  return `<ul class="tab">
+    ${tabs.join('')}
+  </ul>`;
+}
+
 function renderThumbnailList(thumbnailURLs) {
   return thumbnailURLs.map(function(thumbnailURL) {
-    return `<div class="carousel-cell"><img src="${thumbnailURL}""</img></div>`
+    return `<div class="carousel-cell tab-content ${thumbnailURL.device}"><img src="${thumbnailURL.url}"></img></div>`
   }).join('\n');
 }
 
@@ -37,29 +55,6 @@ function renderForm() {
     <input type="file" name="overlay_image" required />
     <input type="submit" value="Stash the file!" />
   </form>
-  `
-}
-
-function handleFileUpload() {
-  return `
-    var form = document.forms.namedItem('overlay_upload');
-    form.addEventListener('submit', function(submitEvent) {
-      formData = new FormData(form);
-      uploadRequest = new XMLHttpRequest();
-      uploadRequest.addEventListener('load', function(loadEvent) {
-        if (uploadRequest.status === 200) {
-          uploadResponse = JSON.parse(uploadRequest.response);
-          var overlayView = document.getElementById('overlayed_image');
-          setInterval(function() {
-            overlayView.src = uploadResponse.download_url;
-            overlayView.style.display = "";
-          }, 1000);
-        }
-      });
-      uploadRequest.open('POST', 'api/upload');
-      uploadRequest.send(formData);
-      submitEvent.preventDefault();
-    }, false);
   `
 }
 

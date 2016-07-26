@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const logger = require('./logger');
 const mockupMetadataHandlers = require('./get_mockup_metadata_handler');
 const allowCORSMiddleware = require('./cors').allowCORSMiddleware;
-const thumbs = require('./thumbs');
+const thumbs = require('./public/thumbs');
 
 
 const app = express()
@@ -16,10 +16,12 @@ app.use(allowCORSMiddleware);
 
 app.get('/', function(req, res) {
   res.send(thumbs.renderIndex([
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png',
-  ]));
+    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone6'},
+    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone5'},
+    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone5'},
+    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone4'},
+    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone4'}
+  ], ['iphone6','iphone5','iphone4']));
 });
 
 
