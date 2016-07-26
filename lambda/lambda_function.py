@@ -5,6 +5,10 @@ import json
 
 MOCKUP_IMAGE_BUCKET_NAME = 'mockup-gem-mockup-images'
 PROCESSED_IMAGE_BUCKET_NAME = 'mockup-gem-processed-images'
+
+THUMBNAIL_WIDTH = 450
+THUMBNAIL_HEIGHT = 300
+
 s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
@@ -41,11 +45,13 @@ def lambda_handler(event, context):
         background_image,
         borderMode=cv2.BORDER_TRANSPARENT,
     )
+    thumbnail = generate_thumbnail(final_image)
 
-    upload_key = get_upload_key(filename_components)
-    processed_image_file_path = '/tmp/{}'.format(upload_key)
-    cv2.imwrite(processed_image_file_path, final_image)
-    s3.upload_file(processed_image_file_path, PROCESSED_IMAGE_BUCKET_NAME, upload_key)
+    final_image_upload_key = get_overlay_upload_key(filename_components)
+    thumbnail_upload_key = get_thumbnail_upload_key(filename_components)
+
+    upload_to_s3(final_image, final_image_upload_key)
+    upload_to_s3(thumbnail, thumbnail_upload_key)
 
 def get_transformation_matrix(
     overlay_image,
@@ -111,10 +117,28 @@ def parse_coord_string(coord_string):
     return [int(split_top_left_coords_string[0]), int(split_top_left_coords_string[1])]
 
 
-def get_upload_key(filename_components):
+def get_overlay_upload_key(filename_components):
     # TODO: This file extension shouldnt be hard-coded, but we're only handling
     # pngs for now.
-    return '{}_{}.png'.format(
+    return '{}.png'.format(get_base_upload_key(filename_components))
+
+def get_thumbnail_upload_key(filename_components):
+    return '{}_thumbnail_{}_{}.jpg'.format(
+        get_base_upload_key(filename_components),
+        THUMBNAIL_WIDTH,
+        THUMBNAIL_HEIGHT,
+    )
+
+def get_base_upload_key(filename_components):
+    return '{}_{}'.format(
         filename_components['uuid'],
         filename_components['mockup_name'],
     )
+
+def generate_thumbnail(image):
+    return cv2.resize(image, (THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT))
+
+def upload_to_s3(image, s3_upload_key):
+    image_file_path = '/tmp/{}'.format(s3_upload_key)
+    cv2.imwrite(image_file_path, image)
+    s3.upload_file(image_file_path, PROCESSED_IMAGE_BUCKET_NAME, s3_upload_key)
