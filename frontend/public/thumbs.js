@@ -3,17 +3,20 @@ function renderIndex(thumbnailURLs, devices) {
   var deviceTabs = renderTabs(devices);
   var fileUploadScript = require('./fileUpload');
   var filterImagesScript = require('./filterImages.js');
+  var carouselScript = require('./carousel.js');
   var styles = require('./styles.js');
   return `<html>
     <head>
-      <link rel="stylesheet" href="https://npmcdn.com/flickity@2.0/dist/flickity.css" media="screen">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.3.1/css/swiper.min.css">
       <style>${styles}</style>
     </head>
     <body>
       ${deviceTabs}
       <img src="" id="overlayed_image" onerror="this.style.display='none'"/>
-      <div class="carousel" data-flickity>
+      <div class="swiper-container">
+        <div class="swiper-wrapper">
           ${thumbnailList}
+        </div>
       </div>
       <br/>
       <br/>
@@ -24,9 +27,11 @@ function renderIndex(thumbnailURLs, devices) {
       ${renderForm()}
       <script>
         ${fileUploadScript}
-        ${filterImagesScript}
       </script>
-      <script src="https://npmcdn.com/flickity@2.0/dist/flickity.pkgd.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.3.1/js/swiper.min.js"></script>
+      <script>
+        ${carouselScript}
+      </script>
     </body>
   </html>
   `
@@ -45,7 +50,7 @@ function renderTabs(devices) {
 
 function renderThumbnailList(thumbnailURLs) {
   return thumbnailURLs.map(function(thumbnailURL) {
-    return `<div class="carousel-cell tab-content ${thumbnailURL.device}"><img src="${thumbnailURL.url}"></img></div>`
+    return `<div class="carousel-cell tab-content swiper-slide" data-device="${thumbnailURL.device}"><img src="${thumbnailURL.url}"></img></div>`
   }).join('\n');
 }
 

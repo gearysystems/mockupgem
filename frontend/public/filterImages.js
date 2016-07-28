@@ -1,17 +1,32 @@
 module.exports = `
+  window.hiddenCells = {};
   function showDevices(evt, deviceName) {
     // Declare all variables
     var i, tabcontent, tablinks;
 
-    // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("tab-content");
-    for (i = 0; i < tabcontent.length; i++) {
-        if(tabcontent[i].className.split(' ').indexOf(deviceName) > -1){
-          tabcontent[i].style.display = "inline-block";
-        } else { 
-          tabcontent[i].style.display = "none";
-        }
+    // Get all elements with class="tab-content" and hide them
+    tabcontent = flkty.getCellElements();
+    if(!window.hiddenCells[deviceName]){
+      window.hiddenCells[deviceName] = [];
     }
+    if(deviceName === window.currentDevice){
+      return;
+    }
+    for (i = 0; i < tabcontent.length; i++) {
+        var device = tabcontent[i].attributes['data-device'].value;
+        if(!window.hiddenCells[device]){
+          window.hiddenCells[device] = [];
+        }
+        if(window.hiddenCells[device].indexOf(tabcontent[i] === -1)){
+          window.hiddenCells[device].push(tabcontent[i]);
+        }
+        flkty.remove(tabcontent[i]);
+    }
+    window.currentDevice = deviceName;
+    window.hiddenCells[deviceName].forEach(function(cell){
+        flkty.append(cell);
+    });
+    flkty.reloadCells();
 
     // Get all elements with class="tablinks" and remove the class "active"
     tablinks = document.getElementsByClassName("tablinks");
