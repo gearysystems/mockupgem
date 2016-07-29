@@ -19,129 +19,61 @@ const imageUploadMiddleware = busboy({
  }
 });
 
-/* I'm gonna apologize in advance for this code. If it seems overly complicated,
-   keep in mind that it achieves these goals:
-    1) Validate all form fields are present before allowing the image to be uploaded.
-    2) Stream the file upload directly to S3 (we don't have to buffer in memory any
-       more than the normal amount of buffering that streams do.)
-   Accomplishing both these goals while working with raw streams required some
-   surprisingly complex code.
-*/
 function imageUploadHandler(req, res) {
- var overlayImageFound = false;
- var mockupNameFound = false;
- var mockupNameIsValid = false;
- var mockupName;
+  const uploadData = req.query;
+  const mockupName = uploadData.mockup_name;
 
- const imageUUID = uuid.v4();
- var s3ImageKey;
-
- /* If we make it to the end of the stream and don't have all the required fields
-    then we reject the request.
- */
- req.busboy.on('finish', handleEndOfRequest);
- function handleEndOfRequest() {
-  console.log('done');
-  if (overlayImageFound === false || mockupNameFound === false) {
-   return res.send(errors.invalidUploadRequestError());
+  // No mockup names provided
+  if (mockupName === undefined && uploadData.mockup_names === undefined) {
+    return res.send(errors.invalidUploadRequestError());
   }
 
-  if (mockupNameIsValid === false) {
-   return res.send(errors.invalidMockupNameError());
+  // Invalid mockup
+  if (mockupName !== undefined && mockupMetadata[mockupName] === undefined) {
+    return res.send(errors.invalidMockupNameError());
   }
 
-  mockupExtension = mockupMetadata[mockupName]['file_extension']
-  return res.send({
-   download_url: getDownloadImageURL(mockupName, imageUUID, mockupExtension),
+  if (req.busboy === undefined) {
+    return res.send(errors.invalidUploadRequestError());
+  }
+
+  const imageUUID = uuid.v4();
+  const s3ImageKey = getS3ImageKey(mockupName, imageUUID);
+  const mockupExtension = mockupMetadata[mockupName].file_extension;
+
+  var fileFound = false;
+  req.busboy.on('file', function(fieldName, file, filename, encoding, mimetype) {
+    fileFound = true;
+    return streamToS3(s3ImageKey, file);
   });
- }
 
- /* This promise won't resolve until all required fields have been validated at
-    which point we can unpause the file upload stream and allow them to continue
-    uploading. If the fields are invalid, it will reject and the file upload
-    will be canceled.
- */
- const awaitMockupName = new Promise(waitForMockupName);
- function waitForMockupName(resolve, reject) {
-  req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
-   if (fieldname === 'mockup_name') {
-    mockupNameFound = true;
-
-    if (mockupMetadata[val] === undefined) {
-     return reject('invalid_mockup_name')
+  req.busboy.on('finish', function() {
+    if (fileFound === false) {
+      return res.send(errors.invalidUploadRequestError());
     }
 
-    mockupNameIsValid = true
-    mockupName = val;
-    // Generate the name we will use for the image in S3
-    s3ImageKey = getS3ImageKey(mockupName, imageUUID);
-    return resolve(val);
-   } else {
-    return reject('invalid_request');
-   }
+    return res.send({
+     download_url: getDownloadImageURL(mockupName, imageUUID, 'png'),
+    });
   });
- }
+}
 
- /* This function will handle file upload events. Internally, it creates a new
-    stream that buffers the file upload until we've resolved that all the
-    required fields are present. Once that is determined, it will begin streaming
-    the file upload to S3.
- */
- req.busboy.on('file', handleImageUpload);
- function handleImageUpload(fieldName, file, filename, encoding, mimetype) {
-  if (fieldName !== 'overlay_image') {
-   return res.send(errors.invalidUploadFieldError());
+function streamToS3(s3ImageKey, fileStream) {
+ var s3obj = new AWS.S3({
+  params: {
+   Bucket: uploadBucket,
+   Key: s3ImageKey,
   }
+ });
 
-  overlayImageFound = true;
-
-  var imageUploadBuffer = new streamBuffers.ReadableStreamBuffer();
-  // Pipe the file upload stream into our buffer
-  file.on('data', function(data) {
-   imageUploadBuffer.put(data);
-  });
-
-  /* Once we have finished streaming the file, stop the buffer or the AWS SDK
-     will keep waiting for more data to upload to S3.
-  */
-  file.on('end', function() {
-   imageUploadBuffer.stop();
-  });
-
-  /* Wait for all the required fields before unpausing the stream and sending
-     it to S3.
-  */
-  awaitMockupName
-   .then(streamToS3)
-   .catch(function(exception) {
-    logger.log(exception);
-    return false;
-   });
-
-  function streamToS3(mockup_name) {
-   // Resume the buffer since we've validated all the fields and want the data
-   // imageUploadBuffer.resume();
-   var s3obj = new AWS.S3({
-    params: {
-     Bucket: uploadBucket,
-     /* This will already be set because we waited for the awaitMockupName
-        promise to resolve.
-     */
-     Key: s3ImageKey,
-    }
-   });
-
-   // Connect the file stream directly to S3 SDK so upload is streamed instead
-   // of being batched in memory.
-   s3obj.upload({Body: imageUploadBuffer}, function(err, data) {
-    if (err) {
-     logger.log(err);
-     return res.send(errors.uploadFailedError());
-    }
-    logger.log(data);
-   });
+ // Connect the file stream directly to S3 SDK so upload is streamed instead
+ // of being batched in memory.
+ s3obj.upload({Body: fileStream}, function(err, data) {
+  if (err) {
+   logger.log(err);
   }
- }
+  logger.log(data);
+ });
 }
 
 function getS3ImageKey(mockupName, imageUUID) {
