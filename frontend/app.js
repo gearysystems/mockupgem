@@ -7,6 +7,7 @@ const logger = require('./logger');
 const mockupMetadataHandlers = require('./get_mockup_metadata_handler');
 const allowCORSMiddleware = require('./cors').allowCORSMiddleware;
 const thumbs = require('./public/thumbs');
+const mockupMetadata = require('./mockup_metadata.js');
 
 
 const app = express()
@@ -15,13 +16,7 @@ app.use(bodyParser.json())
 app.use(allowCORSMiddleware);
 
 app.get('/', function(req, res) {
-  res.send(thumbs.renderIndex([
-    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone6'},
-    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone5'},
-    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone5'},
-    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone4'},
-    {url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Wiktionary_small.svg/350px-Wiktionary_small.svg.png', device: 'iphone4'}
-  ], ['iphone6','iphone5','iphone4']));
+  res.send(thumbs.renderIndex(mockupMetadata.mockupMetadataByDevice));
 });
 
 

@@ -1,32 +1,44 @@
-function renderIndex(thumbnailURLs, devices) {
+const fs = require('fs');
+const path = require('path');
+
+const style = fs.readFileSync(path.join(__dirname,'/style.css'));
+const indexHTML = fs.readFileSync(path.join(__dirname,'/index.html'));
+const fileUploadHandler = fs.readFileSync(path.join(__dirname,'/fileUpload.js'));
+const s3ThumbnailPrefix = "https://s3-us-west-2.amazonaws.com/mockup-gem-mockup-images";
+
+function renderIndex(mockupMetadataByDevice) {
+  var devices = [];
+  for (var deviceName in mockupMetadataByDevice) {
+    devices.push(deviceName);
+  }
+  var thumbnailURLs = mockupMetadataByDevice[devices[0]].map(function(mockupMetdata) {
+    return `${s3ThumbnailPrefix}/${mockupMetdata.mockup_name}.png`
+  });
   var thumbnailList = renderThumbnailList(thumbnailURLs);
-  var deviceTabs = renderTabs(devices);
-  var fileUploadScript = require('./fileUpload');
+  var deviceTabs = renderTabs(['iphone6', 'ipad']);
   var filterImagesScript = require('./filterImages.js');
   var carouselScript = require('./carousel.js');
-  var styles = require('./styles.js');
   return `<html>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <head>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.3.1/css/swiper.min.css">
-      <style>${styles}</style>
+      <style>
+        ${style}
+      </style>
     </head>
     <body>
       ${deviceTabs}
-      <img src="" id="overlayed_image" onerror="this.style.display='none'"/>
+      <div id="mockup-preview-container">
+        <img src="" id="mockup-preview" onerror="this.style.display='none'"/>
+      </div>
       <div class="swiper-container">
         <div class="swiper-wrapper">
           ${thumbnailList}
         </div>
       </div>
-      <br/>
-      <br/>
-      <br/>
-      <br/>
-      <br/>
-      <br/>
       ${renderForm()}
       <script>
-        ${fileUploadScript}
+        ${fileUploadHandler}
       </script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.3.1/js/swiper.min.js"></script>
       <script>
@@ -50,7 +62,9 @@ function renderTabs(devices) {
 
 function renderThumbnailList(thumbnailURLs) {
   return thumbnailURLs.map(function(thumbnailURL) {
-    return `<div class="carousel-cell tab-content swiper-slide" data-device="${thumbnailURL.device}"><img src="${thumbnailURL.url}"></img></div>`
+    return `<div class="carousel-cell tab-content swiper-slide">
+              <img class="mockup-thumbnail" src="${thumbnailURL}"></img>
+            </div>`
   }).join('\n');
 }
 

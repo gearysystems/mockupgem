@@ -26,22 +26,22 @@ echo "This should return all mockup metadata by device"
 curl $URL/api/mockup-metadata-by-device
 echo ""
 
-# Should be successful
+echo "Test"
+curl -F "mockup_name[]=iphone6_on_rock" -F "mockup_name[]=iphone6_rough_texture" -F "overlay_image=@screenshot.png" $URL/api/upload
+echo ""
+
 echo "This should be successful"
 curl -F "mockup_name=iphone6_on_rock" -F "overlay_image=@screenshot.png" $URL/api/upload
 echo ""
 
-# Should return an error
 echo "This should return an error"
 curl -F "mockup_name=iphone6_rough_texture" $URL/api/upload
 echo ""
 
-# Should return an error
 echo "This should return an error"
 curl -F "overlay_image=@screenshot.png" $URL/api/upload
 echo ""
 
-# Should return an error
 echo "This should return an error"
 curl -F "mockup_name=not_a_real_mockup" -F "overlay_image=@screenshot.png" $URL/api/upload
 echo ""
