@@ -86,7 +86,7 @@ def get_overlay_coordinates(overlay_width, overlay_height):
 
 def parse_filename_into_components(filename):
     """
-    >>> test_string = '133186f6-aad3-46c0-a83c-40fd424e7f35*iphone6_rough_texture*560_139|801_227|646_643|399_551*iphone6_rough_texture*560_139|801_227|646_643|399_551'
+    >>> test_string = '133186f6-aad3-46c0-a83c-40fd424e7f35*iphone6_rough_texture*560_139.801_227.646_643.399_551*iphone6_rough_texture*560_139.801_227.646_643.399_551'
 
     >>> expected_response = {
     ...    'uuid': '133186f6-aad3-46c0-a83c-40fd424e7f35',
@@ -126,11 +126,11 @@ def parse_filename_into_components(filename):
 
 def parse_coord_string(coord_string):
     """
-    >>> parse_coord_string('560_139|124_300|500_600|300_200')
+    >>> parse_coord_string('560_139.124_300.500_600.300_200')
     [[560, 139], [124, 300], [500, 600], [300, 200]]
     """
     # Remove brackets
-    split_coords_string = coord_string.split('|')
+    split_coords_string = coord_string.split('.')
     return [
         [int(coords.split('_')[0]), int(coords.split('_')[1])]
         for coords in split_coords_string

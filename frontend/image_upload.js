@@ -74,7 +74,6 @@ function imageUploadHandler(req, res) {
       if (multiMockupS3ImageKey.length > 1024) {
         return res.send(errors.tooManyMockupsError());
       }
-      // Handle that case
       return streamToS3(multiMockupS3ImageKey, file, mockupNames);
     }
     // Handle single mockup case
@@ -137,7 +136,7 @@ function getMultiMockupS3ImageKey(mockupNames, imageUUID) {
   screenCoordinatesForAllImages = mockupNames.map(function(mockupName) {
     const specificMockupMetadata = mockupMetadata[mockupName];
     const screenCoordinates = specificMockupMetadata['screenCoordinates'];
-    return `${mockupName}*[${getScreenCoordinatesForFilename(screenCoordinates)}]`;
+    return `${mockupName}*${getScreenCoordinatesForFilename(screenCoordinates)}`;
   });
   screenCoordinatesForAllImagesConcatenated = screenCoordinatesForAllImages.join('*');
   return `${imageUUID}*${screenCoordinatesForAllImagesConcatenated}`
@@ -158,7 +157,7 @@ function getScreenCoordinatesForFilename(screenCoordinates) {
  topRight = `${screenCoordinates['topRight'][0]}_${screenCoordinates['topRight'][1]}`
  bottomRight = `${screenCoordinates['bottomRight'][0]}_${screenCoordinates['bottomRight'][1]}`
  bottomLeft = `${screenCoordinates['bottomLeft'][0]}_${screenCoordinates['bottomLeft'][1]}`
- return `${topLeft}|${topRight}|${bottomRight}|${bottomLeft}`
+ return `${topLeft}.${topRight}.${bottomRight}.${bottomLeft}`
 }
 
 // TODO: Actually prefix it with the bucket name
