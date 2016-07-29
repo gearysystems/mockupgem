@@ -46,7 +46,7 @@ function imageUploadHandler(req, res) {
         return true;
       }
 
-      return mockupMetadata[mockupName] !== undefined;
+      return mockupMetadata[mockupName] === undefined;
     }, false);
 
     if (invalidMockupFound === true) {
@@ -54,18 +54,34 @@ function imageUploadHandler(req, res) {
     }
   }
 
+  // No more than 10 mockups allowed at a time
+  if (mockupNames !== undefined && mockupNames.length > 10) {
+    return res.send(errors.tooManyMockupsError());
+  }
+
   if (req.busboy === undefined) {
     return res.send(errors.invalidUploadRequestError());
   }
 
   const imageUUID = uuid.v4();
-  const s3ImageKey = getS3ImageKey(mockupName, imageUUID);
-  const mockupExtension = mockupMetadata[mockupName].file_extension;
 
   var fileFound = false;
   req.busboy.on('file', function(fieldName, file, filename, encoding, mimetype) {
     fileFound = true;
-    return streamToS3(s3ImageKey, file, mockupNames);
+    if (mockupNames !== undefined) {
+      const multiMockupS3ImageKey = getMultiMockupS3ImageKey(mockupNames, imageUUID)
+      // S3 only allows filenames up to 1024 bytes, but should be fine for now.
+      if (multiMockupS3ImageKey.length > 1024) {
+        return res.send(errors.tooManyMockupsError());
+      }
+      // Handle that case
+      return streamToS3(multiMockupS3ImageKey, file, mockupNames);
+    }
+    // Handle single mockup case
+    else {
+      const singleMockupS3ImageKey = getSingleMockupS3ImageKey(mockupName, imageUUID);
+      return streamToS3(singleMockupS3ImageKey, file, mockupName);
+    }
   });
 
   req.busboy.on('finish', function() {
@@ -73,8 +89,20 @@ function imageUploadHandler(req, res) {
       return res.send(errors.invalidUploadRequestError());
     }
 
+    if (mockupNames !== undefined) {
+      var downloadUrlsResponse = {};
+      mockupNames.forEach(function(mockupName) {
+        const mockupExtension = mockupMetadata[mockupName].file_extension;
+        downloadUrlsResponse[mockupName] = {
+          full_image_download_url: getDownloadImageURL(mockupName, imageUUID, mockupExtension),
+        };
+      });
+      return res.send(downloadUrlsResponse);
+    }
+
+    const mockupExtension = mockupMetadata[mockupName].file_extension;
     return res.send({
-     download_url: getDownloadImageURL(mockupName, imageUUID, 'png'),
+     download_url: getDownloadImageURL(mockupName, imageUUID, mockupExtension),
     });
   });
 }
@@ -97,12 +125,22 @@ function streamToS3(s3ImageKey, fileStream, mockupNames) {
  });
 }
 
-function getS3ImageKey(mockupName, imageUUID) {
+function getSingleMockupS3ImageKey(mockupName, imageUUID) {
  // If we reach this point, we've already determined we have the metadata
  const specificMockupMetadata = mockupMetadata[mockupName];
- const screenCoordinates = specificMockupMetadata['screenCoordinates']
- const screenCoordinatesFilename = getScreenCoordinatesForFilename(screenCoordinates)
- return `${imageUUID}*${mockupName}*${screenCoordinatesFilename}`;
+ const screenCoordinates = specificMockupMetadata['screenCoordinates'];
+ const screenCoordinatesFilename = getScreenCoordinatesForFilename(screenCoordinates);
+ return `${imageUUID}*${mockupName}*[${screenCoordinatesFilename}]`;
+}
+
+function getMultiMockupS3ImageKey(mockupNames, imageUUID) {
+  screenCoordinatesForAllImages = mockupNames.map(function(mockupName) {
+    const specificMockupMetadata = mockupMetadata[mockupName];
+    const screenCoordinates = specificMockupMetadata['screenCoordinates'];
+    return `${mockupName}*[${getScreenCoordinatesForFilename(screenCoordinates)}]`;
+  });
+  screenCoordinatesForAllImagesConcatenated = screenCoordinatesForAllImages.join('*');
+  return `${imageUUID}*${screenCoordinatesForAllImagesConcatenated}`
 }
 
 /*

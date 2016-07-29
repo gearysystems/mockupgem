@@ -28,6 +28,13 @@ function invalidMockupNameError() {
  )
 }
 
+function tooManyMockupsError() {
+  return createErrorMessage(
+    'too_many_mockups',
+    "No more than 10 mockups can be generated at a time."
+  )
+}
+
 function createErrorMessage(errorCode, errorMessage) {
  return {
   error_code: errorCode,
