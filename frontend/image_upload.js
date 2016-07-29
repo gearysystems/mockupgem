@@ -130,7 +130,7 @@ function getSingleMockupS3ImageKey(mockupName, imageUUID) {
  const specificMockupMetadata = mockupMetadata[mockupName];
  const screenCoordinates = specificMockupMetadata['screenCoordinates'];
  const screenCoordinatesFilename = getScreenCoordinatesForFilename(screenCoordinates);
- return `${imageUUID}*${mockupName}*[${screenCoordinatesFilename}]`;
+ return `${imageUUID}*${mockupName}*${screenCoordinatesFilename}`;
 }
 
 function getMultiMockupS3ImageKey(mockupNames, imageUUID) {
@@ -158,7 +158,7 @@ function getScreenCoordinatesForFilename(screenCoordinates) {
  topRight = `${screenCoordinates['topRight'][0]}_${screenCoordinates['topRight'][1]}`
  bottomRight = `${screenCoordinates['bottomRight'][0]}_${screenCoordinates['bottomRight'][1]}`
  bottomLeft = `${screenCoordinates['bottomLeft'][0]}_${screenCoordinates['bottomLeft'][1]}`
- return `${topLeft}*${topRight}*${bottomRight}*${bottomLeft}`
+ return `${topLeft}|${topRight}|${bottomRight}|${bottomLeft}`
 }
 
 // TODO: Actually prefix it with the bucket name
