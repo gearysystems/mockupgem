@@ -22,6 +22,7 @@ const imageUploadMiddleware = busboy({
 function imageUploadHandler(req, res) {
   const uploadData = req.query;
   const mockupName = uploadData.mockup_name;
+  const mockupNames = uploadData.mockup_names;
 
   // No mockup names provided
   if (mockupName === undefined && uploadData.mockup_names === undefined) {
@@ -31,6 +32,26 @@ function imageUploadHandler(req, res) {
   // Invalid mockup
   if (mockupName !== undefined && mockupMetadata[mockupName] === undefined) {
     return res.send(errors.invalidMockupNameError());
+  }
+
+  // Invalid mockup names
+  if (mockupNames !== undefined && !Array.isArray(mockupNames)) {
+    return res.send(errors.invalidMockupNameError());
+  }
+
+  // If multiple mockup names provided, check if any of them are invalid
+  if (mockupNames !== undefined) {
+    const invalidMockupFound = mockupNames.reduce(function(invalidMockup, mockupName) {
+      if (invalidMockup === true) {
+        return true;
+      }
+
+      return mockupMetadata[mockupName] !== undefined;
+    }, false);
+
+    if (invalidMockupFound === true) {
+      return res.send(errors.invalidMockupNameError());
+    }
   }
 
   if (req.busboy === undefined) {
@@ -44,7 +65,7 @@ function imageUploadHandler(req, res) {
   var fileFound = false;
   req.busboy.on('file', function(fieldName, file, filename, encoding, mimetype) {
     fileFound = true;
-    return streamToS3(s3ImageKey, file);
+    return streamToS3(s3ImageKey, file, mockupNames);
   });
 
   req.busboy.on('finish', function() {
@@ -58,7 +79,7 @@ function imageUploadHandler(req, res) {
   });
 }
 
-function streamToS3(s3ImageKey, fileStream) {
+function streamToS3(s3ImageKey, fileStream, mockupNames) {
  var s3obj = new AWS.S3({
   params: {
    Bucket: uploadBucket,

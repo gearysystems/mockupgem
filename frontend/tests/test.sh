@@ -14,30 +14,34 @@ then
   SAMPLE_IMAGE=screenshot.png
 fi
 
-echo "This should return all mockup metadata in an array"
-curl $URL/api/mockup-metadata
-echo ""
+# echo "This should return all mockup metadata in an array"
+# curl $URL/api/mockup-metadata
+# echo ""
+#
+# echo "This should return all mockup metadata by name"
+# curl $URL/api/mockup-metadata-by-name
+# echo ""
+#
+# echo "This should return all mockup metadata by device"
+# curl $URL/api/mockup-metadata-by-device
+# echo ""
+#
+# echo "This should be successful"
+# curl -F "overlay_image=@screenshot.png" $URL/api/upload?mockup_name=iphone6_on_rock
+# echo ""
+#
+# echo "This should return an error"
+# curl -X POST $URL/api/upload?mockup_name=iphone6_rough_texture
+# echo ""
+#
+# echo "This should return an error"
+# curl -F "overlay_image=@screenshot.png" $URL/api/upload
+# echo ""
+#
+# echo "This should return an error"
+# curl -F "overlay_image=@screenshot.png" $URL/api/upload?mockup_name=not_a_real_mockup
+# echo ""
 
-echo "This should return all mockup metadata by name"
-curl $URL/api/mockup-metadata-by-name
-echo ""
-
-echo "This should return all mockup metadata by device"
-curl $URL/api/mockup-metadata-by-device
-echo ""
-
-echo "This should be successful"
-curl -F "overlay_image=@screenshot.png" $URL/api/upload?mockup_name=iphone6_on_rock
-echo ""
-
-echo "This should return an error"
-curl -X POST $URL/api/upload?mockup_name=iphone6_rough_texture
-echo ""
-
-echo "This should return an error"
-curl -F "overlay_image=@screenshot.png" $URL/api/upload
-echo ""
-
-echo "This should return an error"
-curl -F "overlay_image=@screenshot.png" $URL/api/upload?mockup_name=not_a_real_mockup
-echo ""
+# echo "This should return an error"
+# curl --globoff -F "overlay_image=@screenshot.png" "$URL/api/upload?mockup_names[]=iphone6_on_rock&mockup_names[]=yolo"
+# echo ""
