@@ -9,14 +9,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.shortcuts import confirm
 from itertools import permutations
 import time
-
-FILES_TO_IGNORE = [
-    'generate_mockup_metadata.py',
-    'mockup_metadata.json',
-    '.DS_Store',
-    'screenshot.png',
-    'processed'
-]
+from shared import *
 
 def main():
     with open('mockup_metadata.json', 'r') as mockup_metadata_file:

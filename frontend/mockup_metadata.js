@@ -160,7 +160,8 @@ function getFullsizeImageUrl(mockupName, file_extension, s3BucketName) {
 }
 
 function getThumbnailImageUrl(mockupName, file_extension, s3BucketName, width, height) {
-  return `${s3BucketName}/${mockupName}-thumbnail-${width}_${height}.${file_extension}`
+  // Thumbnails are always jpg to save bandwidth
+  return `${s3BucketName}/${mockupName}-thumbnail-${width}_${height}.jpg`
 }
 
 
