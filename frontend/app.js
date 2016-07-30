@@ -22,9 +22,9 @@ app.get('/', function(req, res) {
 
 // API endpoints
 app.post('/api/upload', imageUpload.imageUploadMiddleware, imageUpload.imageUploadHandler);
-app.get('/api/mockup-metadata', mockupMetadataHandlers.getMockupMetadataHandler);
-app.get('/api/mockup-metadata-by-name', mockupMetadataHandlers.getMockupMetadataByNameHandler);
-app.get('/api/mockup-metadata-by-device', mockupMetadataHandlers.getMockupMetadataByDeviceHandler);
+app.get('/api/templates', mockupMetadataHandlers.getMockupMetadataHandler);
+app.get('/api/templates-by-name', mockupMetadataHandlers.getMockupMetadataByNameHandler);
+app.get('/api/templates-by-device', mockupMetadataHandlers.getMockupMetadataByDeviceHandler);
 
 const port = process.env.PORT || 3000
 app.listen(port, function() {
