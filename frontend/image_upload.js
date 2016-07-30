@@ -2,7 +2,6 @@ const busboy = require('connect-busboy');
 const AWS = require('aws-sdk')
 const uuid = require('node-uuid');
 const errors = require('./errors');
-const streamBuffers = require('stream-buffers');
 const mockupMetadata = require('./mockup_metadata').rawMockupMetadata;
 const logger = require('./logger');
 
@@ -15,7 +14,7 @@ const imageUploadMiddleware = busboy({
  immediate: true,
  limits: {
   files: 1,
-  fileSize: maxFileSize
+  fileSize: maxFileSize,
  }
 });
 

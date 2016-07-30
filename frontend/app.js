@@ -22,6 +22,7 @@ app.get('/', function(req, res) {
 
 // API endpoints
 app.post('/api/upload', imageUpload.imageUploadMiddleware, imageUpload.imageUploadHandler);
+// app.post('/api/screenshot', screenshotUpload.screenshotUploadHandler);
 app.get('/api/templates', mockupMetadataHandlers.getMockupMetadataHandler);
 app.get('/api/templates-by-name', mockupMetadataHandlers.getMockupMetadataByNameHandler);
 app.get('/api/templates-by-device', mockupMetadataHandlers.getMockupMetadataByDeviceHandler);

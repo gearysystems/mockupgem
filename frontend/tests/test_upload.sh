@@ -1,7 +1,5 @@
 # !/bin/bash
 
-# This is a horrible way to test, but no time to do it the right way and this
-# is enough to save my sanity and work quickly without messing stuff up.
 URL=localhost:3000
 if [ "$PRODUCTION" == "true" ]
 then
@@ -13,18 +11,6 @@ if ["$SAMPLE_IMAGE" == ""]
 then
   SAMPLE_IMAGE=screenshot.png
 fi
-
-echo "This should return all mockup metadata in an array"
-curl $URL/api/templates
-echo ""
-
-echo "This should return all mockup metadata by name"
-curl $URL/api/templates-by-name
-echo ""
-
-echo "This should return all mockup metadata by device"
-curl $URL/api/templates-by-device
-echo ""
 
 echo "This should be successful"
 curl -F "overlay_image=@screenshot.png" $URL/api/upload?mockup_name=iphone6_on_rock
