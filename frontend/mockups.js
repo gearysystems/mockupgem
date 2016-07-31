@@ -6,11 +6,21 @@ const templatesMetadata = require('./mockup_metadata').rawMockupMetadata;
 function createMockupsHandler(req, res) {
   const screenshotUUID = req.params.screenshotUUID;
   const templates = req.body.templates;
-  // TODO: Add test cases for this
-  if (screenshotUUID.length !== 36 || !Array.isArray(templates)) {
+
+  const inputIsValid = isInputValid(screenshotUUID, templates);
+  if (inputIsValid === false) {
     return res.send(errors.invalidCreateMockupsRequestError());
   }
-  // TODO: Add test case for this
+
+  // TODO: Remove
+  return res.send("ok");
+}
+
+function isInputValid(screenshotUUID, templates) {
+  if (screenshotUUID.length !== 36 || !Array.isArray(templates)) {
+    return false;
+  }
+
   const containsInvalidTemplate = templates.reduce(function(containsInvalidTemplate, templateName) {
     if (containsInvalidTemplate === true) {
       return true;
@@ -20,11 +30,10 @@ function createMockupsHandler(req, res) {
   }, false);
 
   if (containsInvalidTemplate === true) {
-    return res.send(errors.invalidCreateMockupsRequestError());
+    return false;
   }
 
-  // TODO: Remove
-  return res.send("ok");
+  return true;
 }
 
 module.exports = {
