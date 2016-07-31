@@ -156,12 +156,12 @@ function getMockupMetadataByDevice(mockupMetdataWithURLs) {
 }
 
 function getFullsizeImageUrl(mockupName, file_extension, s3BucketName) {
-  return `${s3BucketName}/${mockupName}.${file_extension}`
+  return `${s3BucketName}/${mockupName}.${file_extension}`;
 }
 
 function getThumbnailImageUrl(mockupName, file_extension, s3BucketName, width, height) {
   // Thumbnails are always jpg to save bandwidth
-  return `${s3BucketName}/${mockupName}-thumbnail-${width}_${height}.jpg`
+  return `${s3BucketName}/${mockupName}-thumbnail-${width}_${height}.jpg`;
 }
 
 

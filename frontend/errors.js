@@ -31,7 +31,21 @@ function invalidMockupNameError() {
 function tooManyMockupsError() {
   return createErrorMessage(
     'too_many_mockups',
-    "No more than 10 mockups can be generated at a time."
+    'No more than 10 mockups can be generated at a time.'
+  )
+}
+
+function invalidScreenshotUploadRequestError() {
+  return createErrorMessage(
+    'invalid_screenshot_upload',
+    'A screenshot must be provided.'
+  )
+}
+
+function invalidCreateMockupsRequestError() {
+  return createErrorMessage(
+    'invalid_create_mockups_request',
+    'The request must contain a valid UUID in the URL and array of mockups in the body.'
   )
 }
 
@@ -48,4 +62,6 @@ module.exports = {
  invalidUploadFieldError: invalidUploadFieldError,
  invalidUploadRequestError: invalidUploadRequestError,
  invalidMockupNameError: invalidMockupNameError,
+ invalidScreenshotUploadRequestError: invalidScreenshotUploadRequestError,
+ invalidCreateMockupsRequestError: invalidCreateMockupsRequestError,
 }

@@ -8,6 +8,8 @@ const mockupMetadataHandlers = require('./get_mockup_metadata_handler');
 const allowCORSMiddleware = require('./cors').allowCORSMiddleware;
 const thumbs = require('./public/thumbs');
 const mockupMetadata = require('./mockup_metadata.js');
+const screenshots = require('./screenshots.js');
+const mockups = require('./mockups.js');
 
 
 const app = express()
@@ -22,7 +24,8 @@ app.get('/', function(req, res) {
 
 // API endpoints
 app.post('/api/upload', imageUpload.imageUploadMiddleware, imageUpload.imageUploadHandler);
-// app.post('/api/screenshot', screenshotUpload.screenshotUploadHandler);
+app.post('/api/screenshots', screenshots.screenshotUploadMiddleware, screenshots.screenshotUploadHandler);
+app.post('/api/screenshots/:screenshotUUID/mockups', mockups.createMockupsHandler);
 app.get('/api/templates', mockupMetadataHandlers.getMockupMetadataHandler);
 app.get('/api/templates-by-name', mockupMetadataHandlers.getMockupMetadataByNameHandler);
 app.get('/api/templates-by-device', mockupMetadataHandlers.getMockupMetadataByDeviceHandler);
