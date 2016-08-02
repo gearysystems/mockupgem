@@ -10,9 +10,15 @@ const thumbnailsToGenerate = [
   }
 ]
 
+const processedMockupsS3URLPrefix = 'https://s3-us-west-2.amazonaws.com/mockup-gem-processed-mockups'
+
+AWS.config.update({region: 'us-west-2'});
+
 function createMockupsHandler(req, res) {
   const screenshotUUID = req.params.screenshotUUID;
   const templates = req.body.templates;
+  console.log(screenshotUUID);
+  console.log(templates);
 
   // TODO: Limit number of templates a user can submit
   const inputIsValid = isInputValid(screenshotUUID, templates);
@@ -20,9 +26,13 @@ function createMockupsHandler(req, res) {
     return res.send(errors.invalidCreateMockupsRequestError());
   }
 
-  generateMockups(screenshotUUID, templates);
-  // TODO: Remove
-  return res.send("ok");
+  generateMockups(screenshotUUID, templates, function(err, data) {
+    if (err) {
+      return res.send(errors.createMockupsError());
+    }
+
+    return res.send(generateSuccesfulResponse(templates, thumbnailsToGenerate))
+  });
 }
 
 function isInputValid(screenshotUUID, templates) {
@@ -41,26 +51,16 @@ function isInputValid(screenshotUUID, templates) {
   if (containsInvalidTemplate === true) {
     return false;
   }
-
-  generateMockups(screenshotUUID, templates, function(err, data) {
-    if (err) {
-      return res.send(errors.createMockupsError());
-    }
-
-    // TODO: Genereate real response
-    return res.send("It worked!");
-  });
-
 }
 
 function generateMockups(screenshotUUID, templates, callback) {
   // TODO: Fill me in
-  const lambda = new AWS.lambda();
+  const lambda = new AWS.Lambda();
   const createMockupParams = {
     // TODO: Put lambda function name here
     FunctionName: 'generateMockups',
     // Make invocation asynchronous
-    InvocationType: 'event',
+    InvocationType: 'Event',
     // Data to pass to lambda function. Must be a JSON string
     // TODO: Make a function
     Payload: JSON.stringify({
@@ -81,13 +81,37 @@ function generateMockups(screenshotUUID, templates, callback) {
     }),
   };
   const genereateMockupsCallback = function(error, data) {
-    if (err) {
-     logger.log(err);
+    if (error) {
+     logger.log(error);
     }
     logger.log(data);
-    callback(err, data);
+    callback(error, data);
   };
   lambda.invoke(createMockupParams, genereateMockupsCallback);
+}
+
+function generateSuccesfulResponse(templates, generatedThumbnails) {
+  var response = {};
+  templates.forEach(function(template) {
+    var thumbnails = {};
+    generatedThumbnails.forEach(function(thumbnail) {
+      thumbnails[`${thumbnail.width}x${thumbnail.height}`] = {
+        url: `${processedMockupsS3URLPrefix}_${template}_thumbnail_${thumbnail.width}_${thumbnail.height}.jpg`,
+        width: thumbnail.width,
+        height: thumbnail.height,
+      }
+    })
+    response[template] = {
+      fullsize: {
+        url: `${processedMockupsS3URLPrefix}_${template}.png`,
+        width: 1200,
+        height: 800,
+      },
+      thumbnails: thumbnails,
+    }
+  });
+
+  return JSON.stringify(response);
 }
 
 module.exports = {

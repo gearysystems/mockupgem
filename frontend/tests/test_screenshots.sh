@@ -14,7 +14,7 @@ fi
 
 VALID_UUID=1c9e7312-f519-48cf-a3b0-664677a0d3e1
 
-
+# TODO: Handle case where they submit empty form
 echo "This should return an invalid upload request error."
 curl -X POST $URL/api/v1/screenshots
 echo ""
