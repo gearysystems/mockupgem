@@ -7,6 +7,13 @@ function uploadFailedError() {
  );
 }
 
+function createMockupsError() {
+  return createErrorMessage(
+    'create_mockups_failed',
+    'Something went wrong when trying to create mockups.'
+  )
+}
+
 function invalidUploadFieldError() {
  return createErrorMessage(
   'invalid_upload_field',
@@ -64,4 +71,5 @@ module.exports = {
  invalidMockupNameError: invalidMockupNameError,
  invalidScreenshotUploadRequestError: invalidScreenshotUploadRequestError,
  invalidCreateMockupsRequestError: invalidCreateMockupsRequestError,
+ createMockupsError: createMockupsError,
 }

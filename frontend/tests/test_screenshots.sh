@@ -16,11 +16,11 @@ VALID_UUID=1c9e7312-f519-48cf-a3b0-664677a0d3e1
 
 
 echo "This should return an invalid upload request error."
-curl -X POST $URL/api/screenshots
+curl -X POST $URL/api/v1/screenshots
 echo ""
 
 echo "This should return a UUID."
-curl -F "screenshot=@$SAMPLE_IMAGE" $URL/api/screenshots
+curl -F "screenshot=@$SAMPLE_IMAGE" $URL/api/v1/screenshots
 echo ""
 
 echo "This should return an invalid create mockup request error"
@@ -28,7 +28,7 @@ curl \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"templates": ["iphone6_rough_texture"]}' \
-  $URL/api/screenshots/invalid_uuid/mockups
+  $URL/api/v1/screenshots/invalid_uuid/mockups
 echo ""
 
 echo "This should return an invalid create mockup request error"
@@ -36,7 +36,7 @@ curl \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"templates": ["invalid_template"]}' \
-  $URL/api/screenshots/invalid_uuid/mockups
+  $URL/api/v1/screenshots/invalid_uuid/mockups
 echo ""
 
 echo "This should return an invalid create mockup request error"
@@ -44,7 +44,7 @@ curl \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"templates": "iphone6_rough_texture"}' \
-  $URL/api/screenshots/invalid_uuid/mockups
+  $URL/api/v1/screenshots/invalid_uuid/mockups
 echo ""
 
 echo "This should return a list of mockup URLs"
@@ -52,5 +52,5 @@ curl \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"templates": ["iphone6_rough_texture"]}' \
-  $URL/api/screenshots/$VALID_UUID/mockups
+  $URL/api/v1/screenshots/$VALID_UUID/mockups
 echo ""

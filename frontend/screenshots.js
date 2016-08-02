@@ -5,6 +5,7 @@ const errors = require('./errors');
 const logger = require('./logger');
 
 const screenshotUploadBucket = 'mockup-gem-uploaded-screenshots'
+const uploadScreenshotsS3URLPrefix = 'https://s3-us-west-2.amazonaws.com/mockup-gem-uploaded-screenshots'
 // 4 MB
 const maxFileSize = 4000000
 
@@ -44,6 +45,7 @@ function screenshotUploadHandler(req, res) {
   req.busboy.on('finish', function() {
     res.send({
       'screenshot_uuid': screenshotUUID,
+      'screenshot_url': `{uploadScreenshotsS3URLPrefix}/{screenshotUUID}`
     })
   });
 }

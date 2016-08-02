@@ -22,13 +22,17 @@ app.get('/', function(req, res) {
 });
 
 
-// API endpoints
-app.post('/api/upload', imageUpload.imageUploadMiddleware, imageUpload.imageUploadHandler);
-app.post('/api/screenshots', screenshots.screenshotUploadMiddleware, screenshots.screenshotUploadHandler);
-app.post('/api/screenshots/:screenshotUUID/mockups', mockups.createMockupsHandler);
-app.get('/api/templates', mockupMetadataHandlers.getMockupMetadataHandler);
-app.get('/api/templates-by-name', mockupMetadataHandlers.getMockupMetadataByNameHandler);
-app.get('/api/templates-by-device', mockupMetadataHandlers.getMockupMetadataByDeviceHandler);
+// Single-endpoint mockup generation
+app.post('/api/v1/upload', imageUpload.imageUploadMiddleware, imageUpload.imageUploadHandler);
+
+// Screenshots/mockups
+app.post('/api/v1/screenshots', screenshots.screenshotUploadMiddleware, screenshots.screenshotUploadHandler);
+app.post('/api/v1/screenshots/:screenshotUUID/mockups', mockups.createMockupsHandler);
+
+// Template metadata
+app.get('/api/v1/templates', mockupMetadataHandlers.getMockupMetadataHandler);
+app.get('/api/v1/templates-by-name', mockupMetadataHandlers.getMockupMetadataByNameHandler);
+app.get('/api/v1/templates-by-device', mockupMetadataHandlers.getMockupMetadataByDeviceHandler);
 
 const port = process.env.PORT || 3000
 app.listen(port, function() {
