@@ -31,7 +31,7 @@ function createMockupsHandler(req, res) {
       return res.send(errors.createMockupsError());
     }
 
-    return res.send(generateSuccesfulResponse(templates, thumbnailsToGenerate))
+    return res.send(generateSuccesfulResponse(screenshotUUID, templates, thumbnailsToGenerate))
   });
 }
 
@@ -90,20 +90,20 @@ function generateMockups(screenshotUUID, templates, callback) {
   lambda.invoke(createMockupParams, genereateMockupsCallback);
 }
 
-function generateSuccesfulResponse(templates, generatedThumbnails) {
+function generateSuccesfulResponse(screenshotUUID, templates, generatedThumbnails) {
   var response = {};
   templates.forEach(function(template) {
     var thumbnails = {};
     generatedThumbnails.forEach(function(thumbnail) {
       thumbnails[`${thumbnail.width}x${thumbnail.height}`] = {
-        url: `${processedMockupsS3URLPrefix}_${template}_thumbnail_${thumbnail.width}_${thumbnail.height}.jpg`,
+        url: `${processedMockupsS3URLPrefix}/${screenshotUUID}_${template}_thumbnail_${thumbnail.width}_${thumbnail.height}.jpg`,
         width: thumbnail.width,
         height: thumbnail.height,
       }
     })
     response[template] = {
       fullsize: {
-        url: `${processedMockupsS3URLPrefix}_${template}.png`,
+        url: `${processedMockupsS3URLPrefix}/${screenshotUUID}_${template}.png`,
         width: 1200,
         height: 800,
       },
