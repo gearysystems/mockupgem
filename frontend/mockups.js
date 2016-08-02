@@ -17,8 +17,6 @@ AWS.config.update({region: 'us-west-2'});
 function createMockupsHandler(req, res) {
   const screenshotUUID = req.params.screenshotUUID;
   const templates = req.body.templates;
-  console.log(screenshotUUID);
-  console.log(templates);
 
   // TODO: Limit number of templates a user can submit
   const inputIsValid = isInputValid(screenshotUUID, templates);
