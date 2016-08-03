@@ -53,7 +53,7 @@ def lambda_handler(event, context):
         # TODO: Should change mockups bucket to not store file extension so its
         # more generic
         template_name = template_data['name']
-        template_s3_image_key = '{}.png'.format(template_name)
+        template_s3_image_key = template_name
         template_image_download_path = '/tmp/{}'.format(template_name)
         s3.download_file(
             TEMPLATE_IMAGES_BUCKET_NAME,

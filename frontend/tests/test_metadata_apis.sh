@@ -7,13 +7,13 @@ then
 fi
 
 echo "This should return all mockup metadata in an array"
-curl $URL/api/templates
+curl $URL/api/v1/templates
 echo ""
 
 echo "This should return all mockup metadata by name"
-curl $URL/api/templates-by-name
+curl $URL/api/v1/templates-by-name
 echo ""
 
 echo "This should return all mockup metadata by device"
-curl $URL/api/templates-by-device
+curl $URL/api/v1/templates-by-device
 echo ""

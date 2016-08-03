@@ -26,7 +26,7 @@ def lambda_handler(event, context):
         # Download mockup images
         # TODO: This file extension shouldnt be hard-coded, but we're only handling
         # pngs for now.
-        mockup_image_key = '{}.png'.format(mockup['mockup_name'])
+        mockup_image_key = mockup['mockup_name']
         mockup_image_download_path = '/tmp/{}'.format(mockup_image_key)
         s3.download_file(MOCKUP_IMAGE_BUCKET_NAME, mockup_image_key, mockup_image_download_path)
 

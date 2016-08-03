@@ -10,6 +10,7 @@ from prompt_toolkit.shortcuts import confirm
 from itertools import permutations
 import time
 from shared import *
+from shutil import copyfile
 
 def main():
     with open('mockup_metadata.json', 'r') as mockup_metadata_file:
@@ -21,11 +22,15 @@ def main():
     new_mockup_metadata = copy.deepcopy(existing_mockup_metadata)
     overlay_image = cv2.imread('screenshot.png')
 
-    mockup_images = os.listdir('.')
+    mockup_images = os.listdir('mockup_images')
     for image_filename in mockup_images:
         if image_filename in FILES_TO_IGNORE:
             continue
+        image_filename = 'mockup_images/{}'.format(image_filename)
         filename_components = parse_filename_into_components(image_filename)
+        if filename_components is None:
+            print("Not an image: {}".format(image_filename))
+            break
         if filename_components['mockup_name'] in existing_mockup_metadata:
             continue
         loaded_image = cv2.imread(image_filename)
@@ -84,11 +89,14 @@ def main():
         }
 
         new_mockup_metadata[filename_components['mockup_name']] = image_mockup_metadata
-        # os.rename(image_filename, 'processed/' + filename_components['mockup_name'] + '.' + filename_components['file_extension'])
+        copyfile(image_filename, 'processed/' + filename_components['mockup_name'])
 
     print(new_mockup_metadata)
     with open('mockup_metadata.json', 'w') as mockup_metadata_file:
         mockup_metadata_file.write(json.dumps(new_mockup_metadata))
+    with open('../frontend/mockup_metadata.json', 'w') as mockup_metadata_file:
+        mockup_metadata_file.write(json.dumps(new_mockup_metadata))
+
 
     print("Wrote new metadata to mockup_metadata.json")
 
@@ -161,6 +169,8 @@ def parse_filename_into_components(filename):
     """
     print(filename)
     filename_components = filename.split('-')
+    if len(filename_components) < 3:
+        return None
     print(filename_components)
     offset = 1 if len(filename_components) == 4 else 0
 
