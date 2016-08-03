@@ -12,14 +12,14 @@ then
   SAMPLE_IMAGE=screenshot.png
 fi
 
-VALID_UUID=1c9e7312-f519-48cf-a3b0-664677a0d3e1
+VALID_UUID=5415ee81-e5ce-4e84-892f-ae85e4e76d0b
 
 # TODO: Handle case where they submit empty form
 echo "This should return an invalid upload request error."
 curl -X POST $URL/api/v1/screenshots
 echo ""
 
-echo "This should return a UUID."
+echo "This should return a UUID and url."
 curl -F "screenshot=@$SAMPLE_IMAGE" $URL/api/v1/screenshots
 echo ""
 
@@ -27,7 +27,7 @@ echo "This should return an invalid create mockup request error"
 curl \
   -X POST \
   -H "Content-Type: application/json" \
-  -d '{"templates": ["iphone6_rough_texture"]}' \
+  -d '{"templates": ["iphone6_white_minimal_outdoor_holding"]}' \
   $URL/api/v1/screenshots/invalid_uuid/mockups
 echo ""
 
@@ -43,7 +43,7 @@ echo "This should return an invalid create mockup request error"
 curl \
   -X POST \
   -H "Content-Type: application/json" \
-  -d '{"templates": "iphone6_rough_texture"}' \
+  -d '{"templates": "iphone6_white_minimal_outdoor_holding"}' \
   $URL/api/v1/screenshots/invalid_uuid/mockups
 echo ""
 
@@ -51,6 +51,6 @@ echo "This should return a list of mockup URLs"
 curl \
   -X POST \
   -H "Content-Type: application/json" \
-  -d '{"templates": ["iphone6_rough_texture"]}' \
+  -d '{"templates": ["iphone6_white_minimal_outdoor_holding"]}' \
   $URL/api/v1/screenshots/$VALID_UUID/mockups
 echo ""

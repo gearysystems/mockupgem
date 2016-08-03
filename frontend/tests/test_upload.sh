@@ -17,12 +17,12 @@ curl -F "overlay_image=@screenshot.png" $URL/api/v1/upload?mockup_name=iphone6_o
 echo ""
 
 echo "This should be successful"
-curl --globoff -F "overlay_image=@screenshot.png" "$URL/api/v1/upload?mockup_names[]=iphone6_on_rock&mockup_names[]=iphone6_rough_texture"
+curl --globoff -F "overlay_image=@screenshot.png" "$URL/api/v1/upload?mockup_names[]=iphone6_white_minimal_outdoor_holding&mockup_names[]=iphone6_white_minimal_car_holding"
 echo ""
 
 
 echo "This should return an error"
-curl -X POST $URL/api/v1/upload?mockup_name=iphone6_rough_texture
+curl -X POST $URL/api/v1/upload?mockup_name=iphone6_white_minimal_outdoor_holding
 echo ""
 
 echo "This should return an error"
@@ -34,5 +34,5 @@ curl -F "overlay_image=@screenshot.png" $URL/api/v1/upload?mockup_name=not_a_rea
 echo ""
 
 echo "This should return an error"
-curl --globoff -F "overlay_image=@screenshot.png" "$URL/api/v1/upload?mockup_names[]=iphone6_on_rock&mockup_names[]=yolo"
+curl --globoff -F "overlay_image=@screenshot.png" "$URL/api/v1/upload?mockup_names[]=iphone6_white_minimal_outdoor_holding&mockup_names[]=yolo"
 echo ""

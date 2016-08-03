@@ -45,7 +45,7 @@ function screenshotUploadHandler(req, res) {
   req.busboy.on('finish', function() {
     res.send({
       'screenshot_uuid': screenshotUUID,
-      'screenshot_url': `{uploadScreenshotsS3URLPrefix}/{screenshotUUID}`
+      'screenshot_url': `${uploadScreenshotsS3URLPrefix}/${screenshotUUID}`
     })
   });
 }

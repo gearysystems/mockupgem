@@ -5,8 +5,20 @@ const templatesMetadata = require('./mockup_metadata').rawMockupMetadata;
 
 const thumbnailsToGenerate = [
   {
-    width: 450,
-    height: 300
+    width: 1200,
+    height: 1200,
+  },
+  {
+    width: 800,
+    height: 800,
+  },
+  {
+    width: 600,
+    height: 600,
+  },
+  {
+    width: 400,
+    height: 400,
   }
 ]
 
