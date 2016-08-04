@@ -10,7 +10,9 @@ functional utilities like lodash or something, but probably not worth bringing t
 in at this point.
 */
 
-fs = require('fs');
+const fs = require('fs');
+const thumbnailsToGenerate = require('./config').thumbnailsToGenerate;
+
 /*
 screenCoordinates should be in this order:
 top left, top right, bottom right, bottom left
@@ -71,14 +73,16 @@ function getMockupMetadataWithURLs(rawMockupMetadata){
         mockupMetadata.file_extension,
         mockupsS3BucketName
       ),
-      thumbnail_450_300_url: getThumbnailImageUrl(
-        mockupName,
-        mockupMetadata.file_extension,
-        mockupsS3BucketName,
-        450,
-        300
-      ),
     }
+    thumbnailsToGenerate.forEach(function(thumbnailSize) {
+      mockupThumbnailKey = `thumbnail_${thumbnailSize.width}_${thumbnailSize.height}_url`
+      mockupMetadataWithURLs[mockupName][mockupThumbnailKey] = getThumbnailImageUrl(
+        mockupName,
+        mockupsS3BucketName,
+        thumbnailSize.width,
+        thumbnailSize.height
+      )
+    });
   }
 
   return mockupMetadataWithURLs;
@@ -156,12 +160,12 @@ function getMockupMetadataByDevice(mockupMetdataWithURLs) {
 }
 
 function getFullsizeImageUrl(mockupName, file_extension, s3BucketName) {
-  return `${s3BucketName}/${mockupName}`;
+  return `${s3BucketName}/${mockupName}.png`;
 }
 
-function getThumbnailImageUrl(mockupName, file_extension, s3BucketName, width, height) {
+function getThumbnailImageUrl(mockupName, s3BucketName, width, height) {
   // Thumbnails are always jpg to save bandwidth
-  return `${s3BucketName}/${mockupName}-thumbnail-${width}_${height}`;
+  return `${s3BucketName}/${mockupName}-thumbnail-${width}_${height}.jpg`;
 }
 
 

@@ -89,7 +89,9 @@ def main():
         }
 
         new_mockup_metadata[filename_components['mockup_name']] = image_mockup_metadata
-        copyfile(image_filename, 'processed/' + filename_components['mockup_name'])
+        # Extension-less for internal use.
+        copyfile(image_filename, 'processed/{}'.format(filename_components['mockup_name']))
+
 
     print(new_mockup_metadata)
     with open('mockup_metadata.json', 'w') as mockup_metadata_file:

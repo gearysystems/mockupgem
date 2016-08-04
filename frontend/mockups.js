@@ -2,25 +2,9 @@ const AWS = require('aws-sdk');
 const errors = require('./errors');
 const logger = require('./logger');
 const templatesMetadata = require('./mockup_metadata').rawMockupMetadata;
+const config = require('./config');
 
-const thumbnailsToGenerate = [
-  {
-    width: 1200,
-    height: 1200,
-  },
-  {
-    width: 800,
-    height: 800,
-  },
-  {
-    width: 600,
-    height: 600,
-  },
-  {
-    width: 400,
-    height: 400,
-  }
-]
+const thumbnailsToGenerate = config.thumbnailsToGenerate;
 
 const processedMockupsS3URLPrefix = 'https://s3-us-west-2.amazonaws.com/mockup-gem-processed-mockups'
 

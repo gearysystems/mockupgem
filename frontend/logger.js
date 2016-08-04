@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 function log(entry) {
  if (typeof entry !== 'string') {
   entry = JSON.stringify(entry);
