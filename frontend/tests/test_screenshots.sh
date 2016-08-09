@@ -12,6 +12,8 @@ then
   SAMPLE_IMAGE=screenshot.png
 fi
 
+LARGE_IMAGE=IMG_0576.PNG
+
 VALID_UUID=5415ee81-e5ce-4e84-892f-ae85e4e76d0b
 
 # TODO: Handle case where they submit empty form
@@ -20,7 +22,11 @@ curl -X POST $URL/api/v1/screenshots
 echo ""
 
 echo "This should return a UUID and url."
-curl -F "screenshot=@$SAMPLE_IMAGE" $URL/api/v1/screenshots
+curl -v -F "screenshot=@$SAMPLE_IMAGE" $URL/api/v1/screenshots
+echo ""
+
+echo "This should return a UUID and url - Test large upload."
+curl -v -F "screenshot=@$LARGE_IMAGE" $URL/api/v1/screenshots
 echo ""
 
 echo "This should return an invalid create mockup request error"

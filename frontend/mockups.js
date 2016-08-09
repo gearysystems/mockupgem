@@ -48,10 +48,8 @@ function isInputValid(screenshotUUID, templates) {
 }
 
 function generateMockups(screenshotUUID, templates, callback) {
-  // TODO: Fill me in
   const lambda = new AWS.Lambda();
   const createMockupParams = {
-    // TODO: Put lambda function name here
     FunctionName: 'generateMockups',
     // Make invocation asynchronous
     InvocationType: 'Event',

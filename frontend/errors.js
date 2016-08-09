@@ -56,6 +56,27 @@ function invalidCreateMockupsRequestError() {
   )
 }
 
+function invalidAdminAddTemplateError() {
+  return createErrorMessage(
+    'invalid_admin_add_template_request',
+    'The request was not valid.'
+  )
+}
+
+function adminAddTemplateMetadataError() {
+  return createErrorMessage(
+    'admin_add_template_metadata_error',
+    'Something went wrong when trying to modify the templates metadata in S3.'
+  )
+}
+
+function adminAddtemplateLambdaError() {
+  return createErrorMessage(
+    'admin_template_template_lambda_error',
+    'Something went wrong when trying to invoke the Lambda function.'
+  )
+}
+
 function createErrorMessage(errorCode, errorMessage) {
  return {
   error_code: errorCode,
@@ -72,4 +93,7 @@ module.exports = {
  invalidScreenshotUploadRequestError: invalidScreenshotUploadRequestError,
  invalidCreateMockupsRequestError: invalidCreateMockupsRequestError,
  createMockupsError: createMockupsError,
+ invalidAdminAddTemplateError: invalidAdminAddTemplateError,
+ adminAddTemplateMetadataError: adminAddTemplateMetadataError,
+ adminAddtemplateLambdaError: adminAddtemplateLambdaError,
 }

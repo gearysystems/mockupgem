@@ -10,6 +10,7 @@ const thumbs = require('./public/thumbs');
 const mockupMetadata = require('./mockup_metadata.js');
 const screenshots = require('./screenshots.js');
 const mockups = require('./mockups.js');
+const adminHandlers = require('./admin.js');
 
 
 const app = express()
@@ -17,10 +18,9 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json())
 app.use(allowCORSMiddleware);
 
-app.get('/', function(req, res) {
-  res.send(thumbs.renderIndex(mockupMetadata.mockupMetadataByDevice));
-});
-
+// Admin endpoints for adding new templates
+app.get('/admin/templates', adminHandlers.getAdminTemplates);
+app.post('/admin/templates', adminHandlers.addTemplateUploadMiddleware, adminHandlers.postAdminTemplates);
 
 // Single-endpoint mockup generation
 app.post('/api/v1/upload', imageUpload.imageUploadMiddleware, imageUpload.imageUploadHandler);

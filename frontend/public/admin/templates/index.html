@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <form action="/admin/templates" method="POST" enctype="multipart/form-data">
+      Template Name:
+      <br>
+      <input type="text" name="template_name" value="" required>
+      <br>
+      Device Name:
+      <br>
+      <input type="text" name="device_name" value="" required>
+      <br>
+      Top left:
+      <br>
+      <input type="number" name="top_left" value="" required>
+      <br>
+      Top right:
+      <br>
+      <input type="number" name="top_right" value="" required>
+      <br>
+      Bottom right:
+      <br>
+      <input type="number" name="bottom_right" value="" required>
+      <br>
+      Bottom left:
+      <br>
+      <input type="number" name="bottom_left" value="">
+      <br>
+      Template Image
+      <input type="file" name="template_image" accept="image/*" required>
+      <br>
+      <input type="submit" value="Submit">
+    </form>
+  </body>
+</html>
