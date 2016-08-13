@@ -3,9 +3,11 @@
 const path = require('path');
 const busboy = require('connect-busboy');
 const errors = require('./errors.js');
+const config = require('./config.js');
 const uuid = require('node-uuid');
 const AWS = require('aws-sdk');
 const logger = require('./logger');
+const templatesMetadata = require('./mockup_metadata');
 
 /*
   TODO: Cleanup this endpoint. Its kind of messy, but its an admin endpoint
@@ -13,14 +15,15 @@ const logger = require('./logger');
 */
 
 // Bucket we store new templates in that still need to be processed
-const addTemplateS3Bucket = 'mockup-gem-admin-added-templates';
+const addTemplateS3Bucket = config.addTemplateS3Bucket;
 // Bucket that contains processed templates + the metadata file
-const templatesS3Bucket = 'mockup-gem-test';
+const templatesS3Bucket = config.templatesS3Bucket;
 // Key for mockup metdata file in S3
-const mockupMetdataS3Key = 'mockup_metadata.json';
+const mockupMetdataS3Key = config.mockupMetdataS3Key;
 // 4 MB
 const maxFileSize = 4000000
 
+// TODO: Import from config
 const thumbnailSizesToGenerate = [
     {thumbnail_width: 1200, thumbnail_height: 1200},
     {thumbnail_width: 800, thumbnail_height: 800},
@@ -47,10 +50,14 @@ function  postAdminTemplates(req, res) {
   }
   var templateName = null;
   var templateDevice = null;
-  var topLeft = null;
-  var topRight = null;
-  var bottomRight = null;
-  var bottomLeft = null;
+  var topLeftX = null;
+  var topLeftY = null;
+  var topRightX = null;
+  var topRightY = null;
+  var bottomRightX = null;
+  var bottomRightY = null;
+  var bottomLeftX = null;
+  var bottomLeftY = null;
 
   req.busboy.on('field', function(key, value, keyTruncated, valueTruncated) {
     switch (key) {
@@ -60,17 +67,29 @@ function  postAdminTemplates(req, res) {
       case 'device_name':
         templateDevice = value;
         break;
-      case 'top_left':
-        topLeft = parseFloat(value);
+      case 'top_left_x':
+        topLeftX = parseFloat(value);
         break;
-      case 'top_right':
-        topRight = parseFloat(value);
+      case 'top_left_y':
+        topLeftY = parseFloat(value);
         break;
-      case 'bottom_right':
-        bottomRight = parseFloat(value);
+      case 'top_right_x':
+        topRightX = parseFloat(value);
         break;
-      case 'bottom_left':
-        bottomLeft = parseFloat(value);
+      case 'top_right_y':
+        topRightY = parseFloat(value);
+        break;
+      case 'bottom_right_x':
+        bottomRightX = parseFloat(value);
+        break;
+      case 'bottom_right_y':
+        bottomRightY = parseFloat(value);
+        break;
+      case 'bottom_left_x':
+        bottomLeftX = parseFloat(value);
+        break;
+      case 'bottom_left_y':
+        bottomLeftY = parseFloat(value);
         break;
       default:
         break;
@@ -111,10 +130,14 @@ function  postAdminTemplates(req, res) {
           return updateMockupMetadata(
             templateName,
             templateDevice,
-            topLeft,
-            topRight,
-            bottomRight,
-            bottomLeft,
+            topLeftX,
+            topLeftY,
+            topRightX,
+            topRightY,
+            bottomRightX,
+            bottomRightY,
+            bottomLeftX,
+            bottomLeftY,
             function(responseToReturn) {res.send(responseToReturn)}
           )
         }
@@ -162,10 +185,14 @@ function invokeProcessTemplatesLambda(
 function updateMockupMetadata(
   templateName,
   templateDevice,
-  topLeft,
-  topRight,
-  bottomRight,
-  bottomLeft,
+  topLeftX,
+  topLeftY,
+  topRightX,
+  topRightY,
+  bottomRightX,
+  bottomRightY,
+  bottomLeftX,
+  bottomLeftY,
   callback
 ) {
   // Load existing metadata
@@ -190,10 +217,10 @@ function updateMockupMetadata(
 
     templateMetadata[templateName] = {
       screenCoordinates: {
-        topLeft: topLeft,
-        topRight: topRight,
-        bottomRight: bottomRight,
-        bottomLeft: bottomLeft,
+        topLeft: [topLeftX, topLeftY],
+        topRight: [topRightX, topRightY],
+        bottomRight: [bottomRightX, bottomRightY],
+        bottomLeft: [bottomLeftX, bottomLeftY],
       },
       device: templateDevice,
     }
@@ -219,6 +246,9 @@ function uploadMetadataBackToS3(newMetadata, callback) {
       return callback(errors.adminAddTemplateMetadataError());
     }
     logger.log(data);
+
+    // So server will grab new metadata immediately.
+    templatesMetadata.updateMockupMetadata();
     return callback(';)');
   });
 

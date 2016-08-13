@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const errors = require('./errors');
 const logger = require('./logger');
-const templatesMetadata = require('./mockup_metadata').rawMockupMetadata;
+const getTemplatesMetadata = require('./mockup_metadata').getRawMockupMetadata;
 const config = require('./config');
 
 const thumbnailsToGenerate = config.thumbnailsToGenerate;
@@ -11,16 +11,17 @@ const processedMockupsS3URLPrefix = 'https://s3-us-west-2.amazonaws.com/mockup-g
 AWS.config.update({region: 'us-west-2'});
 
 function createMockupsHandler(req, res) {
+  const templatesMetadata = getTemplatesMetadata();
   const screenshotUUID = req.params.screenshotUUID;
   const templates = req.body.templates;
 
   // TODO: Limit number of templates a user can submit
-  const inputIsValid = isInputValid(screenshotUUID, templates);
+  const inputIsValid = isInputValid(screenshotUUID, templates, templatesMetadata);
   if (inputIsValid === false) {
     return res.send(errors.invalidCreateMockupsRequestError());
   }
 
-  generateMockups(screenshotUUID, templates, function(err, data) {
+  generateMockups(screenshotUUID, templates, templatesMetadata, function(err, data) {
     if (err) {
       return res.send(errors.createMockupsError());
     }
@@ -29,7 +30,7 @@ function createMockupsHandler(req, res) {
   });
 }
 
-function isInputValid(screenshotUUID, templates) {
+function isInputValid(screenshotUUID, templates, templatesMetadata) {
   if (screenshotUUID.length !== 36 || !Array.isArray(templates)) {
     return false;
   }
@@ -47,7 +48,7 @@ function isInputValid(screenshotUUID, templates) {
   }
 }
 
-function generateMockups(screenshotUUID, templates, callback) {
+function generateMockups(screenshotUUID, templates, templatesMetadata, callback) {
   const lambda = new AWS.Lambda();
   const createMockupParams = {
     FunctionName: 'generateMockups',

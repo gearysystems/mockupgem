@@ -1,15 +1,15 @@
 const mockupMetadata = require('./mockup_metadata.js');
 
 function getMockupMetadataHandler(req, res) {
-  return res.send(mockupMetadata.mockupMetadata);
+  return res.send(mockupMetadata.getMockupMetadata());
 }
 
 function getMockupMetadataByNameHandler(req, res) {
-  return res.send(mockupMetadata.mockupMetadataByName);
+  return res.send(mockupMetadata.getMockupMetadataByName());
 }
 
 function getMockupMetadataByDeviceHandler(req, res) {
-  return res.send(mockupMetadata.mockupMetadataByDevice);
+  return res.send(mockupMetadata.getMockupMetadataByDevice());
 }
 
 module.exports = {

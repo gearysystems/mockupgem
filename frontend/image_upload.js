@@ -2,7 +2,7 @@ const busboy = require('connect-busboy');
 const AWS = require('aws-sdk')
 const uuid = require('node-uuid');
 const errors = require('./errors');
-const mockupMetadata = require('./mockup_metadata').rawMockupMetadata;
+const getMockupMetadata = require('./mockup_metadata').getRawMockupMetadata;
 const logger = require('./logger');
 
 const uploadBucket = 'mockup-gem-uploaded-images'
@@ -19,6 +19,7 @@ const imageUploadMiddleware = busboy({
 });
 
 function imageUploadHandler(req, res) {
+  const mockupMetadata = getMockupMetadata();
   const uploadData = req.query;
   const mockupName = uploadData.mockup_name;
   const mockupNames = uploadData.mockup_names;
@@ -68,7 +69,7 @@ function imageUploadHandler(req, res) {
   req.busboy.on('file', function(fieldName, file, filename, encoding, mimetype) {
     fileFound = true;
     if (mockupNames !== undefined) {
-      const multiMockupS3ImageKey = getMultiMockupS3ImageKey(mockupNames, imageUUID)
+      const multiMockupS3ImageKey = getMultiMockupS3ImageKey(mockupNames, imageUUID, mockupMetadata)
       // S3 only allows filenames up to 1024 bytes, but should be fine for now.
       if (multiMockupS3ImageKey.length > 1024) {
         return res.send(errors.tooManyMockupsError());
@@ -77,7 +78,7 @@ function imageUploadHandler(req, res) {
     }
     // Handle single mockup case
     else {
-      const singleMockupS3ImageKey = getSingleMockupS3ImageKey(mockupName, imageUUID);
+      const singleMockupS3ImageKey = getSingleMockupS3ImageKey(mockupName, imageUUID, mockupMetadata);
       return streamToS3(singleMockupS3ImageKey, file, mockupName);
     }
   });
@@ -123,7 +124,7 @@ function streamToS3(s3ImageKey, fileStream, mockupNames) {
  });
 }
 
-function getSingleMockupS3ImageKey(mockupName, imageUUID) {
+function getSingleMockupS3ImageKey(mockupName, imageUUID, mockupMetadata) {
  // If we reach this point, we've already determined we have the metadata
  const specificMockupMetadata = mockupMetadata[mockupName];
  const screenCoordinates = specificMockupMetadata['screenCoordinates'];
@@ -131,7 +132,7 @@ function getSingleMockupS3ImageKey(mockupName, imageUUID) {
  return `${imageUUID}*${mockupName}*${screenCoordinatesFilename}`;
 }
 
-function getMultiMockupS3ImageKey(mockupNames, imageUUID) {
+function getMultiMockupS3ImageKey(mockupNames, imageUUID, mockupMetadata) {
   screenCoordinatesForAllImages = mockupNames.map(function(mockupName) {
     const specificMockupMetadata = mockupMetadata[mockupName];
     const screenCoordinates = specificMockupMetadata['screenCoordinates'];

@@ -12,6 +12,9 @@ const screenshots = require('./screenshots.js');
 const mockups = require('./mockups.js');
 const adminHandlers = require('./admin.js');
 
+// TODO: Set $NODE_ENV=production in ELB
+// TODO: Add TLS
+// TODO: Add password to admin page
 
 const app = express()
 app.use(bodyParser.urlencoded({extended: true}));

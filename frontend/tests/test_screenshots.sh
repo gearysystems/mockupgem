@@ -22,11 +22,12 @@ curl -X POST $URL/api/v1/screenshots
 echo ""
 
 echo "This should return a UUID and url."
-curl -v -F "screenshot=@$SAMPLE_IMAGE" $URL/api/v1/screenshots
+curl -F "screenshot=@$SAMPLE_IMAGE" $URL/api/v1/screenshots
 echo ""
 
+# TODO: This image is not big enough
 echo "This should return a UUID and url - Test large upload."
-curl -v -F "screenshot=@$LARGE_IMAGE" $URL/api/v1/screenshots
+curl -F "screenshot=@$LARGE_IMAGE" $URL/api/v1/screenshots
 echo ""
 
 echo "This should return an invalid create mockup request error"
@@ -57,6 +58,6 @@ echo "This should return a list of mockup URLs"
 curl \
   -X POST \
   -H "Content-Type: application/json" \
-  -d '{"templates": ["iphone6_white_minimal_outdoor_holding"]}' \
+  -d '{"templates": ["test"]}' \
   $URL/api/v1/screenshots/$VALID_UUID/mockups
 echo ""

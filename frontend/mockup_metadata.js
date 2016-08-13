@@ -11,29 +11,33 @@ in at this point.
 */
 
 const fs = require('fs');
-const thumbnailsToGenerate = require('./config').thumbnailsToGenerate;
-
+const AWS = require('aws-sdk')
+const config = require('./config');
+const thumbnailsToGenerate = config.thumbnailsToGenerate;
+const logger = require('./logger');
 /*
 screenCoordinates should be in this order:
 top left, top right, bottom right, bottom left
 */
 const mockupsS3BucketName = 'https://s3-us-west-2.amazonaws.com/mockup-gem-mockup-images';
-const metadataFile = fs.readFileSync('./mockup_metadata.json')
-const rawMockupMetadata = JSON.parse(metadataFile);
+var rawMockupMetadata = {};
 const mockupMetdataWithURLs = getMockupMetadataWithURLs(rawMockupMetadata);
 
+// TODO: Fix the hacky bullshit I introduced by making metadata stored in S3
 module.exports = {
   // All mockup metadata keyed on mockup name
-  rawMockupMetadata: rawMockupMetadata,
+  getRawMockupMetadata: function() {return rawMockupMetadata;},
   // Mockup metdata keyed on mockup name, filtered to client-visible data
-  mockupMetadataByName: mockupMetdataWithURLs,
+  getMockupMetadataByName: function() {return getMockupMetadataWithURLs(rawMockupMetadata);},
   // Array of all mockup metadata, filtered to client-visible data
-  mockupMetadata: getMockupMetadata(mockupMetdataWithURLs),
+  getMockupMetadata: function() {return getMockupMetadata(getMockupMetadataWithURLs(rawMockupMetadata));},
   /*
   Mockup metadata keyed on device-type (array of mockup metadata for each device),
   filtered to client-visible data.
   */
-  mockupMetadataByDevice: getMockupMetadataByDevice(mockupMetdataWithURLs),
+  getMockupMetadataByDevice: function() {return getMockupMetadataByDevice(getMockupMetadataWithURLs(rawMockupMetadata));},
+  // So the admin view can force the server to refresh the metadata
+  updateMockupMetadata: updateMockupMetadata,
 }
 
 /*
@@ -168,7 +172,34 @@ function getThumbnailImageUrl(mockupName, s3BucketName, width, height) {
   return `${s3BucketName}/${mockupName}-thumbnail-${width}_${height}.jpg`;
 }
 
-
 function copyObject(object) {
   return JSON.parse(JSON.stringify(object));
 }
+
+// TODO: This is really hacky right now, fix it later after we're done testing.
+function updateMockupMetadata() {
+  const getTemplatesMetadataS3 = new AWS.S3({
+    params: {
+      Bucket: config.templatesS3Bucket,
+      Key: config.mockupMetdataS3Key,
+      ResponseContentType: 'text',
+    }
+  });
+
+  getTemplatesMetadataS3.getObject(function(err, data) {
+    if (err) {
+      return logger.log(err);
+
+    }
+    logger.log(data);
+    rawMockupMetadata = JSON.parse(data.Body.toString());
+    return;
+  });
+}
+
+updateMockupMetadata();
+/*
+setInterval is in milliseconds so multiply minutes * 60 to get seconds and then
+multiply that by 1000 to get miliseconds.
+*/
+setInterval(updateMockupMetadata, config.templateMetadataRefreshIntervalInMinutes * 60 * 1000);

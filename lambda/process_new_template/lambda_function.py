@@ -55,6 +55,13 @@ def lambda_handler(event, context):
         processed_templates_s3_bucket,
         '{}.{}'.format(final_template_name, fullsize_template_format),
     )
+    # Also upload a version of the template without the file extension because
+    # our create_mockup lambda function is expecting it that way.
+    s3.upload_file(
+        template_image_path,
+        processed_templates_s3_bucket,
+        '{}'.format(final_template_name),
+    )
 
 
 def create_thumbnail(
