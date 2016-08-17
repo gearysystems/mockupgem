@@ -71,7 +71,7 @@ function getMockupMetadataWithURLs(rawMockupMetadata){
   var mockupMetadataWithURLs = {};
 
   for (var mockupName in rawMockupMetadata) {
-    mockupMetadata = rawMockupMetadata[mockupName]
+    const mockupMetadata = rawMockupMetadata[mockupName]
     mockupMetadataWithURLs[mockupName] = {
       device: mockupMetadata.device,
       full_image_url: getFullsizeImageUrl(
@@ -81,7 +81,7 @@ function getMockupMetadataWithURLs(rawMockupMetadata){
       ),
     }
     thumbnailsToGenerate.forEach(function(thumbnailSize) {
-      mockupThumbnailKey = `thumbnail_${thumbnailSize.width}_${thumbnailSize.height}_url`
+      const mockupThumbnailKey = `thumbnail_${thumbnailSize.width}_${thumbnailSize.height}_url`
       mockupMetadataWithURLs[mockupName][mockupThumbnailKey] = getThumbnailImageUrl(
         mockupName,
         mockupsS3BucketName,
@@ -118,15 +118,15 @@ TO
 ]
 */
 function getMockupMetadata(mockupMetadataWithURLs) {
-  var mockupMetadata = [];
+  var mockupMetadataToReturn = [];
 
   for (var mockupName in mockupMetadataWithURLs) {
-    mockupMetdata = copyObject(mockupMetadataWithURLs[mockupName]);
-    mockupMetdata['mockup_name'] = mockupName;
-    mockupMetadata.push(mockupMetdata);
+    var mockupMetadata = copyObject(mockupMetadataWithURLs[mockupName]);
+    mockupMetadata['mockup_name'] = mockupName;
+    mockupMetadataToReturn.push(mockupMetadata);
   }
 
-  return mockupMetadata;
+  return mockupMetadataToReturn;
 }
 
 /*
@@ -157,8 +157,8 @@ function getMockupMetadata(mockupMetadataWithURLs) {
 function getMockupMetadataByDevice(mockupMetadataWithURLs) {
   var mockupMetadataByDevice = {};
   for (var mockupName in mockupMetadataWithURLs) {
-    mockupMetadata = copyObject(mockupMetadataWithURLs[mockupName]);
-    mockupDevice = mockupMetadata['device'];
+    var mockupMetadata = copyObject(mockupMetadataWithURLs[mockupName]);
+    var mockupDevice = mockupMetadata['device'];
 
     if (mockupMetadataByDevice[mockupDevice] === undefined) {
       mockupMetadataByDevice[mockupDevice] = [];

@@ -39,6 +39,8 @@ function isInputValid(screenshotUUID, templates, templatesMetadata) {
       templates.length === 0 ||
       templates.length > 10
   ) {
+    console.log(screenshotUUID)
+    console.log(templates)
     return false;
   }
 
@@ -66,7 +68,7 @@ function generateMockups(screenshotUUID, templates, templatesMetadata, callback)
       screenshot_uuid: screenshotUUID,
       thumbnails_to_generate: thumbnailsToGenerate,
       templates: templates.map(function(template) {
-        templateScreenCoordinates = templatesMetadata[template].screenCoordinates;
+        const templateScreenCoordinates = templatesMetadata[template].screenCoordinates;
         return {
           template_name: template,
           screen_coordinates: {

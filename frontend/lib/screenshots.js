@@ -25,10 +25,10 @@ function screenshotUploadHandler(req, res) {
   }
 
   // Generate UUID
-  screenshotUUID = uuid.v4();
+  const screenshotUUID = uuid.v4();
   req.busboy.on('file', function(fieldName, fileStream, filename, encoding, mimetype) {
     // Stream to S3
-    s3Object = new AWS.S3({
+    const s3Object = new AWS.S3({
       params: {
         Bucket: screenshotUploadBucket,
         Key: screenshotUUID,

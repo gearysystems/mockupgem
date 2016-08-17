@@ -94,10 +94,10 @@ function imageUploadHandler(req, res) {
       return res.send(errors.invalidUploadRequestError());
     }
 
+    const mockupExtension = 'png'
     if (mockupNames !== undefined) {
       var downloadUrlsResponse = {};
       mockupNames.forEach(function(mockupName) {
-        const mockupExtension = mockupMetadata[mockupName].file_extension;
         downloadUrlsResponse[mockupName] = {
           full_image_download_url: getDownloadImageURL(mockupName, imageUUID, mockupExtension),
         };
@@ -105,7 +105,6 @@ function imageUploadHandler(req, res) {
       return res.send(downloadUrlsResponse);
     }
 
-    const mockupExtension = mockupMetadata[mockupName].file_extension;
     return res.send({
      download_url: getDownloadImageURL(mockupName, imageUUID, mockupExtension),
     });
@@ -139,12 +138,12 @@ function getSingleMockupS3ImageKey(mockupName, imageUUID, mockupMetadata) {
 }
 
 function getMultiMockupS3ImageKey(mockupNames, imageUUID, mockupMetadata) {
-  screenCoordinatesForAllImages = mockupNames.map(function(mockupName) {
+  const screenCoordinatesForAllImages = mockupNames.map(function(mockupName) {
     const specificMockupMetadata = mockupMetadata[mockupName];
     const screenCoordinates = specificMockupMetadata['screenCoordinates'];
     return `${mockupName}*${getScreenCoordinatesForFilename(screenCoordinates)}`;
   });
-  screenCoordinatesForAllImagesConcatenated = screenCoordinatesForAllImages.join('*');
+  const screenCoordinatesForAllImagesConcatenated = screenCoordinatesForAllImages.join('*');
   return `${imageUUID}*${screenCoordinatesForAllImagesConcatenated}`
 }
 
@@ -159,10 +158,10 @@ function getMultiMockupS3ImageKey(mockupNames, imageUUID, mockupMetadata) {
  100_200-200_300-300_400-400_500
 */
 function getScreenCoordinatesForFilename(screenCoordinates) {
- topLeft = `${screenCoordinates['topLeft'][0]}_${screenCoordinates['topLeft'][1]}`
- topRight = `${screenCoordinates['topRight'][0]}_${screenCoordinates['topRight'][1]}`
- bottomRight = `${screenCoordinates['bottomRight'][0]}_${screenCoordinates['bottomRight'][1]}`
- bottomLeft = `${screenCoordinates['bottomLeft'][0]}_${screenCoordinates['bottomLeft'][1]}`
+ const topLeft = `${screenCoordinates['topLeft'][0]}_${screenCoordinates['topLeft'][1]}`
+ const topRight = `${screenCoordinates['topRight'][0]}_${screenCoordinates['topRight'][1]}`
+ const bottomRight = `${screenCoordinates['bottomRight'][0]}_${screenCoordinates['bottomRight'][1]}`
+ const bottomLeft = `${screenCoordinates['bottomLeft'][0]}_${screenCoordinates['bottomLeft'][1]}`
  return `${topLeft}.${topRight}.${bottomRight}.${bottomLeft}`
 }
 

@@ -9,8 +9,8 @@ const logger = require('./lib/logger');
 // TODO: Add TLS
 // TODO: Add password to admin page
 const app = express()
-routes.setupRoutes(app);
 middleware.setupMiddleware(app);
+routes.setupRoutes(app);
 
 const port = process.env.PORT || 3000
 app.listen(port, function() {
