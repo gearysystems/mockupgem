@@ -36,8 +36,7 @@ function isInputValid(screenshotUUID, templates, templatesMetadata) {
       !screenshotUUID ||
       screenshotUUID.length !== 36 ||
       !Array.isArray(templates) ||
-      templates.length === 0 ||
-      templates.length > 10
+      templates.length === 0
   ) {
     console.log(screenshotUUID)
     console.log(templates)
